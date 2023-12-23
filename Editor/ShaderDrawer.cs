@@ -180,7 +180,51 @@ namespace LWGUI
 			ReflectionHelper.DefaultShaderPropertyInternal(editor, position, prop, label);
 		}
 	}
+	
+	/// <summary>
+	/// Similar to builtin Toggle()
+	/// </summary>
+	public class SubBitToggleDrawer : SubDrawer
+	{
+		private string flags;
+		private int bit;
 
+		public SubBitToggleDrawer(string group, string flags, float bit)
+		{
+			this.group = group;
+			this.flags = flags;
+			this.bit = (int) bit;
+		}
+		
+		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Float; }
+
+		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
+		{
+			bool value = (prop.floatValue != 0.0f);
+			EditorGUI.BeginChangeCheck();
+			value = EditorGUI.Toggle(position, label, value);
+			if (EditorGUI.EndChangeCheck())
+			{
+				prop.floatValue = value ? 1.0f : 0.0f;
+			}
+			//
+			foreach (var target in editor.targets)
+			{
+				var material = (Material) target;
+				var flagsValue = material.GetInteger(flags);
+				if (value)
+				{
+					flagsValue |= (1 << bit);
+				}
+				else
+				{
+					flagsValue &= ~(1 << bit);
+				}
+				material.SetInteger(flags, flagsValue);
+			}
+		}
+	}
+	
 	/// <summary>
 	/// Similar to builtin Toggle()
 	/// group：father group name, support suffix keyword for conditional display (Default: none)
