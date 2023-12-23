@@ -13,7 +13,7 @@ namespace LWGUI
 	{
 		void BuildStaticMetaData(Shader inShader, MaterialProperty inProp, MaterialProperty[] inProps, PropertyStaticData inoutPropertyStaticData);
 
-		void GetDefaultValueDescription(Shader inShader, MaterialProperty inProp, PerShaderData inPerShaderData, PerFrameData inoutPerFrameData);
+		void GetDefaultValueDescription(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData, PerFrameData inoutPerFrameData);
 	}
 
 	public interface IBasePresetDrawer
@@ -67,12 +67,12 @@ namespace LWGUI
 		}
 
 		public virtual void GetDefaultValueDescription(Shader           inShader,
-														MaterialProperty inProp,
-														PerShaderData    inPerShaderData,
-														PerFrameData     inoutPerFrameData)
+													   MaterialProperty inProp,
+													   MaterialProperty inDefaultProp,
+													   PerShaderData    inPerShaderData,
+													   PerFrameData     inoutPerFrameData)
 		{
-			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription =
-				inoutPerFrameData.propertyDatas[inProp.name].defualtProperty.floatValue > 0 ? "On" : "Off";
+			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription = inDefaultProp.floatValue > 0 ? "On" : "Off";
 		}
 
 		public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -148,7 +148,11 @@ namespace LWGUI
 			inoutPropertyStaticData.groupName = group;
 		}
 
-		public virtual void GetDefaultValueDescription(Shader inShader, MaterialProperty inProp, PerShaderData inPerShaderData, PerFrameData inoutPerFrameData) { }
+		public virtual void GetDefaultValueDescription(Shader           inShader,
+													   MaterialProperty inProp,
+													   MaterialProperty inDefaultProp,
+													   PerShaderData    inPerShaderData,
+													   PerFrameData     inoutPerFrameData) { }
 
 		public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
@@ -248,11 +252,11 @@ namespace LWGUI
 
 		public override void GetDefaultValueDescription(Shader           inShader,
 														MaterialProperty inProp,
+														MaterialProperty inDefaultProp,
 														PerShaderData    inPerShaderData,
 														PerFrameData     inoutPerFrameData)
 		{
-			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription =
-				inoutPerFrameData.propertyDatas[inProp.name].defualtProperty.floatValue > 0 ? "On" : "Off";
+			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription = inDefaultProp.floatValue > 0 ? "On" : "Off";
 		}
 
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -378,6 +382,7 @@ namespace LWGUI
 
 		public override void GetDefaultValueDescription(Shader           inShader,
 														MaterialProperty inProp,
+														MaterialProperty inDefaultProp,
 														PerShaderData    inPerShaderData,
 														PerFrameData     inoutPerFrameData)
 		{
@@ -392,8 +397,8 @@ namespace LWGUI
 			}
 
 			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription =
-				inoutPerFrameData.propertyDatas[_minPropName].defualtProperty.floatValue + " - " +
-				inoutPerFrameData.propertyDatas[_maxPropName].defualtProperty.floatValue;
+				inoutPerFrameData.GetDefaultProperty(_minPropName).floatValue + " - " +
+				inoutPerFrameData.GetDefaultProperty(_maxPropName).floatValue;
 		}
 
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -414,12 +419,13 @@ namespace LWGUI
 			var w = EditorGUIUtility.labelWidth;
 			EditorGUIUtility.labelWidth = 0;
 			Rect inputRect = MaterialEditor.GetRectAfterLabelWidth(controlRect); // this is the remaining rect area after label's area
-			EditorGUIUtility.labelWidth = w;
 
 			// draw label
 			EditorGUI.PrefixLabel(controlRect, label);
 
 			// draw min max slider
+			var indentLevel = EditorGUI.indentLevel;
+			EditorGUI.indentLevel = 0;
 			Rect[] splittedRect = Helper.SplitRect(inputRect, 3);
 
 			EditorGUI.BeginChangeCheck();
@@ -452,6 +458,9 @@ namespace LWGUI
 				minProp.floatValue = Mathf.Clamp(minf, minProp.rangeLimits.x, minProp.rangeLimits.y);
 				maxProp.floatValue = Mathf.Clamp(maxf, maxProp.rangeLimits.x, maxProp.rangeLimits.y);
 			}
+
+			EditorGUI.indentLevel = indentLevel;
+			EditorGUIUtility.labelWidth = w;
 		}
 	}
 
@@ -538,10 +547,11 @@ namespace LWGUI
 
 		public override void GetDefaultValueDescription(Shader           inShader,
 														MaterialProperty inProp,
+														MaterialProperty inDefaultProp,
 														PerShaderData    inPerShaderData,
 														PerFrameData     inoutPerFrameData)
 		{
-			var index = Array.IndexOf(_values, (int)inoutPerFrameData.propertyDatas[inProp.name].defualtProperty.floatValue);
+			var index = Array.IndexOf(_values, (int)inDefaultProp.floatValue);
 			if (index < _names.Length && index >= 0)
 				inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription = _names[index].text;
 		}
@@ -685,20 +695,21 @@ namespace LWGUI
 
 		public override void GetDefaultValueDescription(Shader           inShader,
 														MaterialProperty inProp,
+														MaterialProperty inDefaultProp,
 														PerShaderData    inPerShaderData,
 														PerFrameData     inoutPerFrameData)
 		{
-			var extraProp = inoutPerFrameData.GetProperty(_extraPropName);
-			if (extraProp != null)
+			var defaultExtraProp = inoutPerFrameData.GetDefaultProperty(_extraPropName);
+			if (defaultExtraProp != null)
 			{
 				var text = string.Empty;
-				if (extraProp.type == MaterialProperty.PropType.Vector)
-					text = ChannelDrawer.GetChannelName(extraProp);
+				if (defaultExtraProp.type == MaterialProperty.PropType.Vector)
+					text = ChannelDrawer.GetChannelName(defaultExtraProp);
 				else
-					text = RevertableHelper.GetPropertyDefaultValueText(extraProp);
+					text = RevertableHelper.GetPropertyDefaultValueText(defaultExtraProp);
 
 				inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription =
-					RevertableHelper.GetPropertyDefaultValueText(inProp) + ", " + text;
+					RevertableHelper.GetPropertyDefaultValueText(inDefaultProp) + ", " + text;
 			}
 		}
 
@@ -884,11 +895,11 @@ namespace LWGUI
 
 		public override void GetDefaultValueDescription(Shader           inShader,
 														MaterialProperty inProp,
+														MaterialProperty inDefaultProp,
 														PerShaderData    inPerShaderData,
 														PerFrameData     inoutPerFrameData)
 		{
-			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription =
-				GetChannelName(inoutPerFrameData.propertyDatas[inProp.name].defualtProperty);
+			inoutPerFrameData.propertyDatas[inProp.name].defaultValueDescription = GetChannelName(inDefaultProp);
 		}
 
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
@@ -976,7 +987,7 @@ namespace LWGUI
 			// per prop variables
 			bool isDirty;
 			// used to read/write Gradient value in code
-			RampHelper.GradientObject gradientObject = ScriptableObject.CreateInstance<RampHelper.GradientObject>();
+			GradientObject gradientObject = ScriptableObject.CreateInstance<GradientObject>();
 			// used to modify Gradient value for users
 			SerializedObject serializedObject = new SerializedObject(gradientObject);
 			SerializedProperty serializedProperty = serializedObject.FindProperty("gradient");
@@ -1100,10 +1111,11 @@ namespace LWGUI
 
 		public override void GetDefaultValueDescription(Shader           inShader,
 														MaterialProperty inProp,
+														MaterialProperty inDefaultProp,
 														PerShaderData    inPerShaderData,
 														PerFrameData     inoutPerFrameData)
 		{
-			var index = (int)inoutPerFrameData.propertyDatas[inProp.name].defualtProperty.floatValue;
+			var index = (int)inDefaultProp.floatValue;
 			var propertyPreset = inPerShaderData.propertyDatas[inProp.name].propertyPresetAsset;
 
 			if (propertyPreset && index < propertyPreset.presets.Count && index >= 0)
