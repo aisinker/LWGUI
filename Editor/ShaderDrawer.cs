@@ -202,6 +202,12 @@ namespace LWGUI
 		
 		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Float; }
 
+		public override void BuildStaticMetaData(Shader inShader, MaterialProperty inProp, MaterialProperty[] inProps, PropertyStaticData inoutPropertyStaticData)
+		{
+			base.BuildStaticMetaData(inShader, inProp, inProps, inoutPropertyStaticData);
+			inoutPropertyStaticData.AddExtraProperty(flags);
+		}
+		
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
 			bool value = (prop.floatValue != 0.0f);
@@ -215,7 +221,9 @@ namespace LWGUI
 			foreach (var target in editor.targets)
 			{
 				var material = (Material) target;
-				var flagsValue = material.GetInteger(flags);
+				MaterialProperty flagsProp = lwgui.perFrameData.GetProperty(flags);
+				var flagsValue = flagsProp.intValue;
+				// var flagsValue = material.GetInteger(flags);
 				if (value)
 				{
 					flagsValue |= (1 << bit);
@@ -224,6 +232,7 @@ namespace LWGUI
 				{
 					flagsValue &= ~(1 << bit);
 				}
+				flagsProp.intValue = flagsValue;
 				material.SetInteger(flags, flagsValue);
 			}
 		}
