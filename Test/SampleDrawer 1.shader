@@ -35,6 +35,8 @@
 		[Advanced][HideInInspector] _AdvancedColor7 ("Advanced Color 7", Color) = (1, 1, 1, 1)
 		[Advanced][Tex(Group2, _AdvancedColor0)] _AdvancedTex1 ("Advanced Tex 1", 2D) = "white" { }
 		[Advanced][HideInInspector] _AdvancedColor0 ("Advanced Color 0", Color) = (1, 1, 1, 1)
+		[AdvancedHeaderProperty][Sub(Group2)] _AdvancedFloat ("Advanced Image", float) = 0
+		[Advanced][Image(Group2)] _AdvancedImage ("Advanced Image", 2D) = "white" { }
 
 		[Title(Channel Samples)]
 		[Channel] _textureChannelMask ("Texture Channel Mask (Default G)", Vector) = (0, 1, 0, 0)
@@ -53,16 +55,16 @@
 
 
 		[Main(Group3, _, on)] _group3 ("Group - Tex and Color Samples", float) = 0
-		[Advanced][Tex(Group3)] _tex_single_line ("Tex Single Line", 2D) = "white" { }
-		[Advanced][Tex(Group3, _color)] _tex_color ("Tex with Color", 2D) = "white" { }
-		[Advanced][HideInInspector] _color (" ", Color) = (1, 0, 0, 1)
-		[Advanced][Tex(Group3, _textureChannelMask1)] _tex_channel ("Tex with Channel", 2D) = "white" { }
-		[Advanced][HideInInspector] _textureChannelMask1 (" ", Vector) = (0, 0, 0, 1)
+		[Tex(Group3)] _tex_single_line ("Tex Single Line", 2D) = "white" { }
+		[Tex(Group3, _color)] _tex_color ("Tex with Color", 2D) = "white" { }
+		[HideInInspector] _color (" ", Color) = (1, 0, 0, 1)
+		[Tex(Group3, _textureChannelMask1)] _tex_channel ("Tex with Channel", 2D) = "white" { }
+		[HideInInspector] _textureChannelMask1 (" ", Vector) = (0, 0, 0, 1)
 
-		[Advanced][Color(Group3, _mColor1, _mColor2, _mColor3)] _mColor ("Multi Color", Color) = (1, 1, 1, 1)
-		[Advanced][HideInInspector] _mColor1 (" ", Color) = (1, 0, 0, 1)
-		[Advanced][HideInInspector] _mColor2 (" ", Color) = (0, 1, 0, 1)
-		[Advanced][HideInInspector] [HDR] _mColor3 (" ", Color) = (0, 0, 1, 1)
+		[Color(Group3, _mColor1, _mColor2, _mColor3)] _mColor ("Multi Color", Color) = (1, 1, 1, 1)
+		[HideInInspector] _mColor1 (" ", Color) = (1, 0, 0, 1)
+		[HideInInspector] _mColor2 (" ", Color) = (0, 1, 0, 1)
+		[HideInInspector] [HDR] _mColor3 (" ", Color) = (0, 0, 1, 1)
 
 
 		[Title(Ramp Samples)]

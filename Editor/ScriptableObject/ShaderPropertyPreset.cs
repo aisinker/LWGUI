@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Jason Ma
+// Copyright (c) Jason Ma
 using System;
 using System.Collections.Generic;
 using UnityEngine;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jason Ma
+// Copyright (c) Jason Ma
 
 using System;
 using System.Collections.Generic;
@@ -81,6 +81,15 @@ namespace LWGUI
 		private static PropertyInfo EditorGUI_Indent_Property = EditorGUI_Type.GetProperty("indent", BindingFlags.NonPublic | BindingFlags.Static);
 
 		public static float EditorGUI_Indent { get { return (float)EditorGUI_Indent_Property.GetValue(null, null); } }
+
+		#endregion
+
+		#region EditorGUILayout
+
+		private static Type         EditorGUILayout_Type						= typeof(EditorGUILayout);
+		private static PropertyInfo EditorGUILayout_kLabelFloatMinW_Property	= EditorGUILayout_Type.GetProperty("kLabelFloatMinW", BindingFlags.NonPublic | BindingFlags.Static);
+
+		public static float EditorGUILayout_kLabelFloatMinW { get { return (float)EditorGUILayout_kLabelFloatMinW_Property.GetValue(null, null); } }
 
 		#endregion
 

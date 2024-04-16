@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jason Ma
+// Copyright (c) Jason Ma
 
 using System;
 using System.Collections.Generic;
@@ -148,6 +148,11 @@ namespace LWGUI
 		public static bool EndChangeCheck(LWGUIMetaDatas metaDatas, MaterialProperty property)
 		{
 			return metaDatas.perMaterialData.EndChangeCheck(property.name);
+		}
+
+		public static float GetCurrentPropertyLayoutWidth()
+		{
+			return ReflectionHelper.EditorGUILayout_kLabelFloatMinW - ReflectionHelper.EditorGUI_Indent - RevertableHelper.revertButtonWidth - 2;
 		}
 
 		#endregion
@@ -327,11 +332,7 @@ namespace LWGUI
 			if (!string.IsNullOrEmpty(helpboxStr))
 			{
 				var content = new GUIContent(helpboxStr, _helpboxIcon);
-				var textWidth = EditorGUIUtility.currentViewWidth
-							  - ReflectionHelper.EditorGUI_Indent
-							  - RevertableHelper.revertButtonWidth
-							  - _helpboxIcon.width * 0.5f
-							  - guiStyle_Helpbox.margin.horizontal;
+				var textWidth = GetCurrentPropertyLayoutWidth();
 				var textHeight = guiStyle_Helpbox.CalcHeight(content, textWidth);
 				var helpboxRect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect(true, textHeight));
 				helpboxRect.xMax -= RevertableHelper.revertButtonWidth;

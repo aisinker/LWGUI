@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Jason Ma
+// Copyright (c) Jason Ma
 
 using System;
 using System.Collections.Generic;
@@ -681,6 +681,39 @@ namespace LWGUI
 			editor.TexturePropertyMiniThumbnail(rect, prop, label.text, label.tooltip);
 
 			EditorGUI.showMixedValue = false;
+		}
+	}
+
+	/// <summary>
+	/// Draw a read only texture preview. Select the default texture to be displayed in the shader import settings.
+	/// group：father group name, support suffix keyword for conditional display (Default: none)
+	/// Target Property Type: Texture
+	/// </summary>
+	public class ImageDrawer : SubDrawer
+	{
+		protected override float GetVisibleHeight(MaterialProperty prop) { return 0; }
+
+		public ImageDrawer() { }
+
+		public ImageDrawer(string group)
+		{
+			this.group = group;
+		}
+
+		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Texture; }
+
+		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
+		{
+			var img = metaDatas.GetDefaultProperty(prop.name).textureValue;
+			if (img)
+			{
+				var scaledheight = Mathf.Max(0, img.height / (img.width / Helper.GetCurrentPropertyLayoutWidth()));
+				var rect = EditorGUILayout.GetControlRect(true, scaledheight);
+				rect = RevertableHelper.IndentRect(EditorGUI.IndentedRect(rect));
+				EditorGUI.DrawPreviewTexture(rect, img);
+
+				if (GUI.enabled) prop.textureValue = img;
+			}
 		}
 	}
 

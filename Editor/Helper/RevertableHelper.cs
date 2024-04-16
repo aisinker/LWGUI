@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jason Ma
+// Copyright (c) Jason Ma
 
 using System;
 using System.Linq;
@@ -19,16 +19,17 @@ namespace LWGUI
 
 		#region GUI Setting
 
-		public static void IndentRect(ref Rect rect)
+		public static Rect IndentRect(Rect rect)
 		{
 			rect.xMax -= RevertableHelper.revertButtonWidth;
+			return rect;
 		}
 
 		public static Rect SplitRevertButtonRect(ref Rect rect, bool isCallInDrawer = false)
 		{
 			float defaultHeightWithoutDrawers = EditorGUIUtility.singleLineHeight;
 			var revertButtonRect = GetRevertButtonRect(defaultHeightWithoutDrawers, rect, isCallInDrawer);
-			IndentRect(ref rect);
+			rect = IndentRect(rect);
 			return revertButtonRect;
 		}
 

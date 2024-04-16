@@ -1,4 +1,4 @@
-﻿# LWGUI (Light Weight Shader GUI)
+# LWGUI (Light Weight Shader GUI)
 
 [中文](https://github.com/JasonMa0012/LWGUI/blob/dev/README_CN.md) | [English](https://github.com/JasonMa0012/LWGUI)
 
@@ -329,6 +329,20 @@ _mColor ("Multi Color", Color) = (1, 1, 1, 1)
 Result:
 
 ![image-20220828003507825](README_CN.assets/image-20220828003507825.png)
+
+#### Image
+
+```c#
+/// Draw a read only texture preview. Select the default texture to be displayed in the shader import settings.
+/// group：father group name, support suffix keyword for conditional display (Default: none)
+/// Target Property Type: Texture
+public ImageDrawer() { }
+public ImageDrawer(string group)
+```
+
+Result:
+
+![image-20240416142736663](./README_CN.assets/image-20240416142736663.png)
 
 #### Channel
 
