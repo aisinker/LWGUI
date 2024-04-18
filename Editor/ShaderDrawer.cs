@@ -12,9 +12,12 @@ namespace LWGUI
 {
 	public interface IBaseDrawer
 	{
-		void BuildStaticMetaData(Shader inShader, MaterialProperty inProp, MaterialProperty[] inProps, PropertyStaticData inoutPropertyStaticData);
+		void BuildStaticMetaData(Shader inShader, MaterialProperty inProp, MaterialProperty[] inProps, PropertyStaticData inoutPropertyStaticData){}
 
-		void GetDefaultValueDescription(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData, PerMaterialData inoutPerMaterialData);
+		void GetDefaultValueDescription(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData, PerMaterialData inoutPerMaterialData){}
+
+		void OverrideDefaultValue(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData){}
+
 	}
 
 	public interface IBasePresetDrawer
@@ -136,6 +139,8 @@ namespace LWGUI
 		}
 
 		public virtual void GetDefaultValueDescription(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData, PerMaterialData inoutPerMaterialData) { }
+
+		public virtual void OverrideDefaultValue(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData) { }
 
 		public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
@@ -616,8 +621,6 @@ namespace LWGUI
 		private string        _extraPropName = String.Empty;
 		private ChannelDrawer _channelDrawer = new ChannelDrawer();
 
-		protected override float GetVisibleHeight(MaterialProperty prop) { return EditorGUIUtility.singleLineHeight; }
-
 		public TexDrawer() { }
 
 		public TexDrawer(string group) : this(group, String.Empty) { }
@@ -627,6 +630,8 @@ namespace LWGUI
 			this.group = group;
 			this._extraPropName = extraPropName;
 		}
+
+		protected override float GetVisibleHeight(MaterialProperty prop) { return EditorGUIUtility.singleLineHeight; }
 
 		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Texture; }
 
@@ -691,7 +696,7 @@ namespace LWGUI
 	/// </summary>
 	public class ImageDrawer : SubDrawer
 	{
-		protected override float GetVisibleHeight(MaterialProperty prop) { return 0; }
+		private Texture _defaultTex = null;
 
 		public ImageDrawer() { }
 
@@ -700,19 +705,28 @@ namespace LWGUI
 			this.group = group;
 		}
 
+		protected override float GetVisibleHeight(MaterialProperty prop) { return 0; }
+
 		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Texture; }
+
+		public override void OverrideDefaultValue(Shader inShader, MaterialProperty inProp, MaterialProperty inDefaultProp, PerShaderData inPerShaderData)
+		{
+			// To disable revert button
+			_defaultTex = inDefaultProp.textureValue;
+			inDefaultProp.textureValue = null;
+		}
 
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
-			var img = metaDatas.GetDefaultProperty(prop.name).textureValue;
-			if (img)
+			if (_defaultTex)
 			{
-				var scaledheight = Mathf.Max(0, img.height / (img.width / Helper.GetCurrentPropertyLayoutWidth()));
+				var scaledheight = Mathf.Max(0, _defaultTex.height / (_defaultTex.width / Helper.GetCurrentPropertyLayoutWidth()));
 				var rect = EditorGUILayout.GetControlRect(true, scaledheight);
 				rect = RevertableHelper.IndentRect(EditorGUI.IndentedRect(rect));
-				EditorGUI.DrawPreviewTexture(rect, img);
+				EditorGUI.DrawPreviewTexture(rect, _defaultTex);
 
-				if (GUI.enabled) prop.textureValue = img;
+				if (GUI.enabled)
+					prop.textureValue = null;
 			}
 		}
 	}

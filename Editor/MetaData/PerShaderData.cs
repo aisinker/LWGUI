@@ -75,11 +75,11 @@ namespace LWGUI
 	/// </summary>
 	public class PerShaderData
 	{
-		public Dictionary<string, PropertyStaticData> propStaticDatas       = new Dictionary<string, PropertyStaticData>();
-		public Shader                                 shader                = null;
-		public DisplayModeData                  displayModeData = new DisplayModeData();
-		public SearchMode                             searchMode            = SearchMode.Auto;
-		public string                                 searchString          = string.Empty;
+		public Dictionary<string, PropertyStaticData> propStaticDatas = new Dictionary<string, PropertyStaticData>();
+		public Shader                                 shader          = null;
+		public DisplayModeData                        displayModeData = new DisplayModeData();
+		public SearchMode                             searchMode      = SearchMode.Auto;
+		public string                                 searchString    = string.Empty;
 		// public List<string>                           favoriteproperties    = new List<string>();
 
 		// UnityEngine.Object may be destroyed when loading new scene, so must manually check null reference
