@@ -1,4 +1,4 @@
-// Copyright (c) Jason Ma
+﻿// Copyright (c) Jason Ma
 
 using System;
 using System.Collections.Generic;
@@ -664,10 +664,11 @@ namespace LWGUI
 
 			MaterialProperty extraProp = metaDatas.GetProperty(_extraPropName);
 			if (extraProp != null
-			 && (
-					extraProp.type == MaterialProperty.PropType.Color
-				 || extraProp.type == MaterialProperty.PropType.Vector
-				))
+			 // && (
+				// 	extraProp.type == MaterialProperty.PropType.Color
+				//  || extraProp.type == MaterialProperty.PropType.Vector
+				// )
+			)
 			{
 				var i = EditorGUI.indentLevel;
 				EditorGUI.indentLevel = 0;

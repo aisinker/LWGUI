@@ -58,8 +58,8 @@
 		[Tex(Group3)] _tex_single_line ("Tex Single Line", 2D) = "white" { }
 		[Tex(Group3, _color)] _tex_color ("Tex with Color", 2D) = "white" { }
 		[HideInInspector] _color (" ", Color) = (1, 0, 0, 1)
-		[Tex(Group3, _textureChannelMask1)] _tex_channel ("Tex with Channel", 2D) = "white" { }
-		[HideInInspector] _textureChannelMask1 (" ", Vector) = (0, 0, 0, 1)
+		[Tex(Group3, _textureFloat1)] _tex_float ("Tex with Float", 2D) = "white" { }
+		[HideInInspector] _textureFloat1 (" ", Float) = 1
 
 		[Color(Group3, _mColor1, _mColor2, _mColor3)] _mColor ("Multi Color", Color) = (1, 1, 1, 1)
 		[HideInInspector] _mColor1 (" ", Color) = (1, 0, 0, 1)

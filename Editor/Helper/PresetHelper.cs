@@ -1,4 +1,4 @@
-// Copyright (c) Jason Ma
+﻿// Copyright (c) Jason Ma
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
