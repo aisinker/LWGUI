@@ -26,6 +26,49 @@
 
 
 <!--ts-->
+* [LWGUI (Light Weight Shader GUI)](#lwgui-light-weight-shader-gui)
+   * [Installation](#installation)
+   * [Usage](#usage)
+      * [Getting Started](#getting-started)
+      * [LWGUI Drawers](#lwgui-drawers)
+         * [Main &amp; Sub](#main--sub)
+         * [SubToggle](#subtoggle)
+         * [SubPowerSlider](#subpowerslider)
+         * [SubIntRange](#subintrange)
+         * [MinMaxSlider](#minmaxslider)
+         * [KWEnum](#kwenum)
+         * [SubEnum &amp; SubKeywordEnum](#subenum--subkeywordenum)
+         * [Tex &amp; Color](#tex--color)
+         * [Channel](#channel)
+         * [Ramp](#ramp)
+         * [Preset](#preset)
+            * [Create Preset File](#create-preset-file)
+            * [Edit Preset](#edit-preset)
+      * [LWGUI Decorator](#lwgui-decorator)
+         * [Title &amp; SubTitle](#title--subtitle)
+         * [Tooltip &amp; Helpbox](#tooltip--helpbox)
+         * [PassSwitch](#passswitch)
+         * [Advanced &amp; AdvancedHeaderProperty](#advanced--advancedheaderproperty)
+         * [Hidden](#hidden)
+         * [ReadOnly](#readonly)
+         * [ShowIf](#showif)
+      * [Unity Builtin Drawers](#unity-builtin-drawers)
+         * [Space](#space)
+         * [Header](#header)
+         * [Enum](#enum)
+         * [IntRange](#intrange)
+         * [KeywordEnum](#keywordenum)
+         * [PowerSlider](#powerslider)
+         * [Toggle](#toggle)
+   * [Custom Shader GUI](#custom-shader-gui)
+      * [Custom Header and Footer](#custom-header-and-footer)
+      * [Custom Drawer](#custom-drawer)
+   * [TODO](#todo)
+   * [Contribution](#contribution)
+
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: runner, at: Wed May  8 08:13:21 UTC 2024 -->
+
 <!--te-->
 
 
