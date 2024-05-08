@@ -25,44 +25,8 @@
 | [paypal.me/JasonMa0012](paypal.me/JasonMa0012)      | ![723ddce6-fb86-48ff-9683-a12cf6cff7a0](./README_CN.assets/723ddce6-fb86-48ff-9683-a12cf6cff7a0.jpg) |
 
 
-- [Installation](#installation)
-- [Usage](#usage)
-  * [Getting Started](#getting-started)
-  * [LWGUI Drawers](#lwgui-drawers)
-    + [Main & Sub](#main--sub)
-    + [SubToggle](#subtoggle)
-    + [SubPowerSlider](#subpowerslider)
-    + [SubIntRange](#subintrange)
-    + [MinMaxSlider](#minmaxslider)
-    + [KWEnum](#kwenum)
-    + [SubEnum & SubKeywordEnum](#subenum--subkeywordenum)
-    + [Tex & Color](#tex--color)
-    + [Channel](#channel)
-    + [Ramp](#ramp)
-    + [Preset](#preset)
-      - [Create Preset File](#create-preset-file)
-      - [Edit Preset](#edit-preset)
-  * [LWGUI Decorator](#lwgui-decorator)
-    + [Title & SubTitle](#title--subtitle)
-    + [Tooltip & Helpbox](#tooltip--helpbox)
-    + [PassSwitch](#passswitch)
-    + [Advanced & AdvancedHeaderProperty](#advanced--advancedheaderproperty)
-    + [Hidden](#hidden)
-    + [ShowIf](#showif)
-  * [Unity Builtin Drawers](#unity-builtin-drawers)
-    + [Space](#space)
-    + [Header](#header)
-    + [Enum](#enum)
-    + [IntRange](#intrange)
-    + [KeywordEnum](#keywordenum)
-    + [PowerSlider](#powerslider)
-    + [Toggle](#toggle)
-  * [Tips](#tips)
-- [Custom Shader GUI](#custom-shader-gui)
-  * [Custom Header and Footer](#custom-header-and-footer)
-  * [Custom Drawer](#custom-drawer)
-- [TODO](#todo)
-- [Contribution](#contribution)
+<!--ts-->
+<!--te-->
 
 
 ## Installation
