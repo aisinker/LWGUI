@@ -39,6 +39,7 @@
          * [KWEnum](#kwenum)
          * [SubEnum &amp; SubKeywordEnum](#subenum--subkeywordenum)
          * [Tex &amp; Color](#tex--color)
+         * [Image](#image)
          * [Channel](#channel)
          * [Ramp](#ramp)
          * [Preset](#preset)
@@ -67,7 +68,7 @@
    * [Contribution](#contribution)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: runner, at: Wed May  8 08:13:21 UTC 2024 -->
+<!-- Added by: runner, at: Wed May  8 08:16:39 UTC 2024 -->
 
 <!--te-->
 
