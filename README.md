@@ -342,6 +342,7 @@ Result:
 
 ```c#
 /// Draw a read only texture preview. Select the default texture to be displayed in the shader import settings.
+/// Note: Selected default textures will always be excluded from the build!!!
 /// group：father group name, support suffix keyword for conditional display (Default: none)
 /// Target Property Type: Texture
 public ImageDrawer() { }

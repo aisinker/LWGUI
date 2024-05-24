@@ -384,7 +384,7 @@ namespace LWGUI
 		private static GUIContent _guiContentCollapse   = new GUIContent("", _iconCollapse, "Collapse All Groups");
 		private static GUIContent _guiContentVisibility = new GUIContent("", _iconVisibility, "Display Mode");
 
-		private static string[] _materialInstanceNameEnd = new[] { "_Instantiated", " (Instance)" };
+		private static string[] _materialInstanceNameEnd = new[] { "_Instantiated (Instance)", " (Instance)", "_Instantiated" };
 
 		private enum CopyMaterialValueMask
 		{
