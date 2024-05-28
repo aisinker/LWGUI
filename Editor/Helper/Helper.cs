@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -232,7 +233,24 @@ namespace LWGUI
 			get
 			{
 				if (_guiStyles_ToolbarSearchTextFieldPopup == null)
-					_guiStyles_ToolbarSearchTextFieldPopup = new GUIStyle("ToolbarSearchTextFieldPopup");
+				{
+					string toolbarSeachTextFieldPopupStr = "ToolbarSeachTextFieldPopup";
+					{
+						// ToolbarSeachTextFieldPopup has renamed at Unity 2021.3.28+
+#if !UNITY_2022_3_OR_NEWER
+						string[] versionParts = Application.unityVersion.Split('.');
+						int majorVersion = int.Parse(versionParts[0]);
+						int minorVersion = int.Parse(versionParts[1]);
+						Match patchVersionMatch = Regex.Match(versionParts[2], @"\d+");
+						int patchVersion = int.Parse(patchVersionMatch.Value);
+						if (majorVersion >= 2021 && minorVersion >= 3 && patchVersion >= 28)
+#endif
+						{
+							toolbarSeachTextFieldPopupStr = "ToolbarSearchTextFieldPopup";
+						}
+					}
+					_guiStyles_ToolbarSearchTextFieldPopup = new GUIStyle(toolbarSeachTextFieldPopupStr);
+				}
 				return _guiStyles_ToolbarSearchTextFieldPopup;
 			}
 		}
