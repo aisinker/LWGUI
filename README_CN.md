@@ -388,20 +388,24 @@ float selectedChannelValue = dot(tex2D(_Tex, uv), _textureChannelMask);
 #### Ramp
 
 ```c#
-/// Draw a Ramp Map Editor (Defaulf Ramp Map Resolution: 512 * 2)
-/// group：father group name, support suffix keyword for conditional display (Default: none)
+/// Draw an unreal style Ramp Map Editor (Default Ramp Map Resolution: 512 * 2)
+/// NEW: The new LwguiGradient type has both the Gradient and Curve editors, and can be used in C# scripts and runtime, and is intended to replace UnityEngine.Gradient
+/// group: father group name, support suffix keyword for conditional display (Default: none)
 /// defaultFileName: default Ramp Map file name when create a new one (Default: RampMap)
 /// rootPath: the path where ramp is stored, replace '/' with '.' (for example: Assets.Art.Ramps). when selecting ramp, it will also be filtered according to the path (Default: Assets)
 /// colorSpace: switch sRGB / Linear in ramp texture import setting (Default: sRGB)
 /// defaultWidth: default Ramp Width (Default: 512)
+/// viewChannelMask: editable channels. (Default: RGBA)
+/// timeRange: the abscissa display range (1/24/2400), is used to optimize the editing experience when the abscissa is time of day. (Default: 1)
 /// Target Property Type: Texture2D
 public RampDrawer() : this(String.Empty) { }
 public RampDrawer(string group) : this(group, "RampMap") { }
 public RampDrawer(string group, string defaultFileName) : this(group, defaultFileName, DefaultRootPath, 512) { }
 public RampDrawer(string group, string defaultFileName, float defaultWidth) : this(group, defaultFileName, DefaultRootPath, defaultWidth) { }
 public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth) : this(group, defaultFileName, rootPath, "sRGB", defaultWidth) { }
-public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth)
-
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, "RGBA") { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, viewChannelMask, 1) { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask, float timeRange)
 ```
 
 Example:

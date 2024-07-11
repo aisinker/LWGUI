@@ -11,12 +11,9 @@ namespace LWGUI
 {
 	public class ReflectionHelper
 	{
-		private static Assembly UnityEditor_Assembly = Assembly.GetAssembly(typeof(Editor));
-
-
 		#region MaterialPropertyHandler
 
-		private static Type         MaterialPropertyHandler_Type                    = UnityEditor_Assembly.GetType("UnityEditor.MaterialPropertyHandler");
+		private static Type         MaterialPropertyHandler_Type                    = Assembly.GetAssembly(typeof(Editor)).GetType("UnityEditor.MaterialPropertyHandler");
 		private static MethodInfo   MaterialPropertyHandler_GetHandler_Method       = MaterialPropertyHandler_Type.GetMethod("GetHandler", BindingFlags.Static | BindingFlags.NonPublic);
 		private static PropertyInfo MaterialPropertyHandler_PropertyDrawer_Property = MaterialPropertyHandler_Type.GetProperty("propertyDrawer");
 		private static FieldInfo    MaterialPropertyHandler_DecoratorDrawers_Field  = MaterialPropertyHandler_Type.GetField("m_DecoratorDrawers", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -152,6 +149,21 @@ namespace LWGUI
 			}
 		}
 #endif
+
+		#endregion
+
+		#region GUI
+
+		private static readonly MethodInfo gui_Button_Methed = typeof(GUI).GetMethod("Button", BindingFlags.Static | BindingFlags.NonPublic);
+
+		public static bool GUI_Button(Rect position, int id, GUIContent content, GUIStyle style) =>
+			(bool)gui_Button_Methed.Invoke(null, new object[] { position, id, content, style });
+
+		#endregion
+
+		#region Animation
+
+		public static void AnimationUtility_UpdateTangentsFromMode(AnimationCurve curve) => AnimationUtility.UpdateTangentsFromMode(curve);
 
 		#endregion
 	}

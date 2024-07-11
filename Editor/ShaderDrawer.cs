@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LWGUI.Runtime;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -901,12 +902,15 @@ namespace LWGUI
 	}
 
 	/// <summary>
-	/// Draw a Ramp Map Editor (Defaulf Ramp Map Resolution: 512 * 2)
-	/// group：father group name, support suffix keyword for conditional display (Default: none)
+	/// Draw an unreal style Ramp Map Editor (Default Ramp Map Resolution: 512 * 2)
+	/// NEW: The new LwguiGradient type has both the Gradient and Curve editors, and can be used in C# scripts and runtime, and is intended to replace UnityEngine.Gradient
+	/// group: father group name, support suffix keyword for conditional display (Default: none)
 	/// defaultFileName: default Ramp Map file name when create a new one (Default: RampMap)
 	/// rootPath: the path where ramp is stored, replace '/' with '.' (for example: Assets.Art.Ramps). when selecting ramp, it will also be filtered according to the path (Default: Assets)
 	/// colorSpace: switch sRGB / Linear in ramp texture import setting (Default: sRGB)
 	/// defaultWidth: default Ramp Width (Default: 512)
+	/// viewChannelMask: editable channels. (Default: RGBA)
+	/// timeRange: the abscissa display range (1/24/2400), is used to optimize the editing experience when the abscissa is time of day. (Default: 1)
 	/// Target Property Type: Texture2D
 	/// </summary>
 	public class RampDrawer : SubDrawer
@@ -915,9 +919,11 @@ namespace LWGUI
 
 		protected string _rootPath;
 		protected string _defaultFileName;
-		protected float  _defaultWidth;
-		protected float  _defaultHeight = 2;
-		protected bool   _isLinear      = false;
+		protected float _defaultWidth;
+		protected float _defaultHeight = 2;
+		protected ColorSpace _colorSpace;
+		protected LwguiGradient.ChannelMask _viewChannelMask;
+		protected LwguiGradient.GradientTimeRange _timeRange;
 
 		private static readonly GUIContent _iconMixImage = EditorGUIUtility.IconContent("darkviewbackground");
 
@@ -932,8 +938,12 @@ namespace LWGUI
 		public RampDrawer(string group, string defaultFileName, float defaultWidth) : this(group, defaultFileName, DefaultRootPath, defaultWidth) { }
 
 		public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth) : this(group, defaultFileName, rootPath, "sRGB", defaultWidth) { }
+		
+		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, "RGBA") { }
+		
+		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, viewChannelMask, 1) { }
 
-		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth)
+		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask, float timeRange)
 		{
 			if (!rootPath.StartsWith(DefaultRootPath))
 			{
@@ -943,8 +953,24 @@ namespace LWGUI
 			this.group = group;
 			this._defaultFileName = defaultFileName;
 			this._rootPath = rootPath.Replace('.', '/');
-			this._isLinear = colorSpace.ToLower() == "linear";
+			this._colorSpace = colorSpace.ToLower() == "linear" ? ColorSpace.Linear : ColorSpace.Gamma;
 			this._defaultWidth = Mathf.Max(2.0f, defaultWidth);
+			this._viewChannelMask = LwguiGradient.ChannelMask.None;
+			{
+				viewChannelMask = viewChannelMask.ToLower();
+				for (int c = 0; c < (int)LwguiGradient.Channel.Num; c++)
+				{
+					if (viewChannelMask.Contains(LwguiGradient.channelNames[c]))
+						_viewChannelMask |= LwguiGradient.ChannelIndexToMask(c);
+				}
+			}
+			this._timeRange = LwguiGradient.GradientTimeRange.One;
+			{
+				if ((int)timeRange == (int)LwguiGradient.GradientTimeRange.TwentyFour)
+					_timeRange = LwguiGradient.GradientTimeRange.TwentyFour;
+				else if ((int)timeRange == (int)LwguiGradient.GradientTimeRange.TwentyFourHundred)
+					_timeRange = LwguiGradient.GradientTimeRange.TwentyFourHundred;
+			}
 		}
 
 		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Texture; }
@@ -960,45 +986,21 @@ namespace LWGUI
 		// TODO: undo
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
-			// When switch ramp map
-			RampHelper.SwitchRampMapEvent OnSwitchRampMapEvent = newRampMap =>
-			{
-				prop.textureValue = newRampMap;
-				OnSwitchRampMap(prop.textureValue);
-				metaDatas.OnValidate();
-			};
+			var labelWidth = EditorGUIUtility.labelWidth;
+			var indentLevel = EditorGUI.indentLevel;
 
-			// When create new ramp map
-			RampHelper.SwitchRampMapEvent OnCreateNewRampMapEvent = newRampMap =>
-			{
-				prop.textureValue = newRampMap;
-				OnCreateNewRampMap(prop.textureValue);
-				metaDatas.OnValidate();
-			};
-
-			// per prop variables
-			bool isDirty;
-			// used to read/write Gradient value in code
-			GradientObject gradientObject = ScriptableObject.CreateInstance<GradientObject>();
-			// used to modify Gradient value for users
-			SerializedObject serializedObject = new SerializedObject(gradientObject);
-			SerializedProperty serializedProperty = serializedObject.FindProperty("gradient");
-
-			// Tex > GradientObject
-			gradientObject.gradient = RampHelper.GetGradientFromTexture(prop.textureValue, out isDirty);
-			// GradientObject > SerializedObject
-			serializedObject.Update();
+			var gradient = RampHelper.GetGradientFromTexture(prop.textureValue, out var isDirty) ?? new LwguiGradient();
 
 			OnRampPropUpdate(position, prop, label, editor);
 
 			// Draw Label
 			var labelRect = new Rect(position); //EditorGUILayout.GetControlRect();
-			labelRect.yMax -= position.height * 0.5f;
-			EditorGUI.PrefixLabel(labelRect, label);
+			{
+				labelRect.yMax -= position.height * 0.5f;
+				EditorGUI.PrefixLabel(labelRect, label);
+			}
 
 			// Ramp buttons Rect
-			var labelWidth = EditorGUIUtility.labelWidth;
-			var indentLevel = EditorGUI.indentLevel;
 			var buttonRect = new Rect(position); //EditorGUILayout.GetControlRect();
 			{
 				EditorGUIUtility.labelWidth = 0;
@@ -1009,33 +1011,35 @@ namespace LWGUI
 			}
 
 			// Draw Ramp Editor
-			bool hasGradientChanges, doSaveGradient, doDiscardGradient;
-			Texture2D newCreatedTexture;
-			hasGradientChanges = RampHelper.RampEditor(buttonRect, prop, serializedProperty, _isLinear, isDirty,
-													   _defaultFileName, _rootPath, (int)_defaultWidth, (int)_defaultHeight,
-													   out newCreatedTexture, out doSaveGradient, out doDiscardGradient);
+			var hasGradientChanges = RampHelper.RampEditor(buttonRect, prop, ref gradient, _colorSpace, _viewChannelMask, _timeRange, 
+				isDirty, _defaultFileName, _rootPath, (int)_defaultWidth, (int)_defaultHeight,
+				out var newCreatedTexture, out var doSaveGradient, out var doDiscardGradient);
+			
 			if (newCreatedTexture != null)
-				OnCreateNewRampMapEvent(newCreatedTexture);
+			{
+				LwguiGradientWindow.CloseWindow();
+				prop.textureValue = newCreatedTexture;
+				OnCreateNewRampMap(prop.textureValue);
+				metaDatas.OnValidate();
+			}
 
 			// Save gradient changes
 			if (hasGradientChanges || doSaveGradient)
 			{
-				// SerializedObject > GradientObject
-				serializedObject.ApplyModifiedProperties();
-				// GradientObject > Tex
-				RampHelper.SetGradientToTexture(prop.textureValue, gradientObject, doSaveGradient);
+				// Gradient > Tex
+				RampHelper.SetGradientToTexture(prop.textureValue, gradient, doSaveGradient);
 				OnEditRampMap();
 			}
 
 			// Discard gradient changes
 			if (doDiscardGradient)
 			{
-				// Tex > GradientObject
-				gradientObject.gradient = RampHelper.GetGradientFromTexture(prop.textureValue, out isDirty, true);
-				// GradientObject > SerializedObject
-				serializedObject.Update();
+				LwguiGradientWindow.CloseWindow();
+
+				// Tex > Gradient
+				gradient = RampHelper.GetGradientFromTexture(prop.textureValue, out isDirty, true);
 				// GradientObject > Tex
-				RampHelper.SetGradientToTexture(prop.textureValue, gradientObject, true);
+				RampHelper.SetGradientToTexture(prop.textureValue, gradient, true);
 				OnEditRampMap();
 			}
 
@@ -1059,16 +1063,27 @@ namespace LWGUI
 			}
 
 			// Preview texture override (larger preview, hides texture name)
-			if (prop.hasMixedValue)
 			{
-				EditorGUI.DrawPreviewTexture(previewRect, _iconMixImage.image);
-				GUI.Label(new Rect(previewRect.x + previewRect.width * 0.5f - 10, previewRect.y, previewRect.width * 0.5f, previewRect.height), "―");
+				if (prop.hasMixedValue)
+				{
+					EditorGUI.DrawPreviewTexture(previewRect, _iconMixImage.image);
+					GUI.Label(new Rect(previewRect.x + previewRect.width * 0.5f - 10, previewRect.y, previewRect.width * 0.5f, previewRect.height), "―");
+				}
+				else if (prop.textureValue != null)
+					EditorGUI.DrawPreviewTexture(previewRect, prop.textureValue);
 			}
-			else if (prop.textureValue != null)
-				EditorGUI.DrawPreviewTexture(previewRect, prop.textureValue);
 
 			EditorGUIUtility.labelWidth = labelWidth;
 			EditorGUI.indentLevel = indentLevel;
+			return;
+
+			void OnSwitchRampMapEvent(Texture2D newRampMap)
+			{
+				LwguiGradientWindow.CloseWindow();
+				prop.textureValue = newRampMap;
+				OnSwitchRampMap(prop.textureValue);
+				metaDatas.OnValidate();
+			}
 		}
 	}
 
@@ -1138,7 +1153,7 @@ namespace LWGUI
 				return;
 			}
 
-			var presetNames = presetFile.presets.Select(((inPreset) => new GUIContent(inPreset.presetName))).ToArray();
+			var presetNames = presetFile.presets.Select((inPreset) => new GUIContent(inPreset.presetName)).ToArray();
 			if (EditorGUI.showMixedValue)
 				index = -1;
 			else
