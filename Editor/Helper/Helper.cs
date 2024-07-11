@@ -402,7 +402,6 @@ namespace LWGUI
 		private static GUIContent _guiContentCollapse   = new GUIContent("", _iconCollapse, "Collapse All Groups");
 		private static GUIContent _guiContentVisibility = new GUIContent("", _iconVisibility, "Display Mode");
 
-		private static string[] _materialInstanceNameEnd = new[] { "_Instantiated (Instance)", " (Instance)", "_Instantiated" };
 
 		private enum CopyMaterialValueMask
 		{
@@ -547,44 +546,9 @@ namespace LWGUI
 				}
 				else
 				{
-					// Get Material Asset name
-					var name = material.name;
-					foreach (var nameEnd in _materialInstanceNameEnd)
+					if (FindMaterialAssetByMaterialInstance(material, metaDatas, out var materialAsset))
 					{
-						if (name.EndsWith(nameEnd))
-						{
-							name = name.Substring(0, name.Length - nameEnd.Length);
-							break;
-						}
-					}
-
-					// Get path
-					var guids = AssetDatabase.FindAssets("t:Material " + name);
-					var paths = guids.Select(((guid, i) =>
-					{
-						var filePath = AssetDatabase.GUIDToAssetPath(guid);
-						var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
-						return (fileName == name && filePath.EndsWith(".mat")) ? filePath : null;
-					})).Where((s => !string.IsNullOrEmpty(s))).ToArray();
-
-					// Select Asset
-					if (paths.Length == 0)
-					{
-						Debug.LogError("LWGUI: Can not find Material Assets with name: " + name);
-					}
-					else if (paths.Length > 1)
-					{
-						var str = string.Empty;
-						foreach (string path in paths)
-						{
-							str += "\n" + path;
-						}
-						Debug.LogWarning("LWGUI: Multiple Material Assets with the same name have been found, select only the first one:" + str);
-						Selection.activeObject = AssetDatabase.LoadAssetAtPath<Material>(paths[0]);
-					}
-					else
-					{
-						Selection.activeObject = AssetDatabase.LoadAssetAtPath<Material>(paths[0]);
+						Selection.activeObject = materialAsset;
 					}
 				}
 			}
@@ -631,16 +595,16 @@ namespace LWGUI
 			if (GUI.Button(buttonRect, _guiContentVisibility, Helper.guiStyles_IconButton))
 			{
 				// Build Display Mode Menu Items
-				string[] displayModeMenus = new[]
+				var displayModeMenus = new[]
 				{
 					"Show All Advanced Properties			(" + displayModeData.advancedCount	+ " of " + perShaderData.propStaticDatas.Count + ")",
 					"Show All Hidden Properties				(" + displayModeData.hiddenCount	+ " of " + perShaderData.propStaticDatas.Count + ")",
 					"Show Only Modified Properties			(" + perMaterialData.modifiedCount	+ " of " + perShaderData.propStaticDatas.Count + ")",
 					"Show Only Modified Properties by Group	(" + perMaterialData.modifiedCount	+ " of " + perShaderData.propStaticDatas.Count + ")",
 				};
-				bool[] enabled = new[] { true, true, true, true };
-				bool[] separator = new bool[4];
-				int[] selected = new[]
+				var enabled = new[] { true, true, true, true };
+				var separator = new bool[4];
+				var selected = new[]
 				{
 					displayModeData.showAllAdvancedProperties ? 0 : -1,
 					displayModeData.showAllHiddenProperties ? 1 : -1,
@@ -682,20 +646,46 @@ namespace LWGUI
 			toolBarRect.xMin += 2;
 		}
 
+		public static Func<MeshRenderer, Material, Material> onFindMaterialAssetInRendererByMaterialInstance;
+		
+		private static bool FindMaterialAssetByMaterialInstance(Material material, LWGUIMetaDatas metaDatas, out Material materialAsset)
+		{
+			materialAsset = null;
+			
+			var renderers = ReflectionHelper.GetMeshRenderersByMaterialEditor(metaDatas.perInspectorData.materialEditor);
+			foreach (var renderer in renderers)
+			{
+				if (onFindMaterialAssetInRendererByMaterialInstance != null)
+				{
+					materialAsset = onFindMaterialAssetInRendererByMaterialInstance(renderer, material);
+				}
+				
+				if (materialAsset == null)
+				{
+					int index = renderer.materials.ToList().FindIndex(materialInstance => materialInstance == material);
+					if (index >= 0 && index < renderer.sharedMaterials.Length)
+					{
+						materialAsset = renderer.sharedMaterials[index];
+					}
+				}
+				
+				if (materialAsset != null && AssetDatabase.Contains(materialAsset))
+					return true;
+			}
+			
+			Debug.LogError("LWGUI: Can not find the Material Assets of: " + material.name);
+
+			return false;
+		}
+
 		#endregion
 
 
 		#region Search Field
 
 		private static readonly int s_TextFieldHash = "EditorTextField".GetHashCode();
-		private static readonly GUIContent[] _searchModeMenus =
-			(new GUIContent[(int)SearchMode.Num]).Select(((guiContent, i) =>
-			{
-				if (i == (int)SearchMode.Num)
-					return null;
-
-				return new GUIContent(((SearchMode)i).ToString());
-			})).ToArray();
+		private static readonly GUIContent[] _searchModeMenus = Enumerable.Range(0, (int)SearchMode.Num - 1).Select(i => 
+				new GUIContent(((SearchMode)i).ToString())).ToArray();
 
 		/// <returns>is has changed?</returns>
 		public static bool DrawSearchField(Rect rect, LWGUIMetaDatas metaDatas)

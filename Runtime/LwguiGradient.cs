@@ -87,11 +87,11 @@ namespace LWGUI.Runtime
 
         public void Clear(ChannelMask channelMask = ChannelMask.All)
         {
-            for (int i = 0; i < (int)Channel.Num; i++)
+            for (int c = 0; c < (int)Channel.Num; c++)
             {
-                if (!IsChannelIndexInMask(i, channelMask)) continue;
+                if (!IsChannelIndexInMask(c, channelMask)) continue;
                 
-                if (_curves.Count > i) _curves[i].ClearKeys();
+                if (_curves.Count > c) _curves[c].keys = new Keyframe[0];
                 else _curves.Add(new AnimationCurve());
             }
         }
@@ -99,11 +99,11 @@ namespace LWGUI.Runtime
         public void SetCurve(AnimationCurve curve, ChannelMask channelMask)
         {
             curve ??= defaultCurve;
-            for (int i = 0; i < (int)Channel.Num; i++)
+            for (int c = 0; c < (int)Channel.Num; c++)
             {
-                if (!IsChannelIndexInMask(i, channelMask)) continue;
+                if (!IsChannelIndexInMask(c, channelMask)) continue;
 
-                _curves[i] = curve;
+                _curves[c] = curve;
             }
         }
         
@@ -126,12 +126,12 @@ namespace LWGUI.Runtime
 
         public void AddKey(Keyframe key, ChannelMask channelMask)
         {
-            for (int i = 0; i < (int)Channel.Num; i++)
+            for (int c = 0; c < (int)Channel.Num; c++)
             {
-                if (!IsChannelIndexInMask(i, channelMask))
+                if (!IsChannelIndexInMask(c, channelMask))
                     continue;
                 
-                _curves[i].AddKey(key);
+                _curves[c].AddKey(key);
             }
 
         }

@@ -56,6 +56,24 @@ namespace LWGUI
 			MaterialEditor_DefaultShaderPropertyInternal_Method.Invoke(editor, new System.Object[] { position, prop, label });
 		}
 
+		public static List<MeshRenderer> GetMeshRenderersByMaterialEditor(MaterialEditor materialEditor)
+		{
+			var outRenderers = new List<MeshRenderer>();
+			
+			// MaterialEditor.ShouldEditorBeHidden()
+			PropertyEditor property = materialEditor.propertyViewer as PropertyEditor;
+			if (property)
+			{
+				GameObject gameObject = property.tracker.activeEditors[0].target as GameObject;
+				if (gameObject)
+				{
+					outRenderers.AddRange(gameObject.GetComponents<MeshRenderer>());
+				}
+			}
+
+			return outRenderers;
+		}
+
 		#endregion
 
 
