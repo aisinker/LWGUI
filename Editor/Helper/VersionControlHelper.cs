@@ -11,7 +11,7 @@ namespace LWGUI
 {
 	public class VersionControlHelper
 	{
-		public static bool isVCEnabled { get { return Provider.enabled && Provider.isActive; } }
+		public static bool isVCEnabled => Provider.enabled && Provider.isActive;
 
 		public static bool Checkout(UnityEngine.Object obj)
 		{

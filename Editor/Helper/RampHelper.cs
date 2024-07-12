@@ -2,28 +2,19 @@
 using System;
 using System.IO;
 using System.Linq;
-using LWGUI.Runtime;
+using LWGUI.LwguiGradientEditor;
+using LWGUI.Runtime.LwguiGradient;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace LWGUI
 {
-	public class RampHelper
+	public static class RampHelper
 	{
 		#region RampEditor
 
 		public static readonly string projectPath = Application.dataPath.Substring(0, Application.dataPath.Length - 6);
 
-		public static string lastSavePath
-		{
-			get { return EditorPrefs.GetString("LWGUI_GradientSavePath_" + Application.version, Application.dataPath); }
-			set
-			{
-				if (value.Contains(projectPath))
-					EditorPrefs.SetString("LWGUI_GradientSavePath_" + Application.version, value);
-			}
-		}
 
 		private static readonly GUIContent _iconAdd     = new GUIContent(EditorGUIUtility.IconContent("d_Toolbar Plus").image, "Add"),
 										   _iconEdit    = new GUIContent(EditorGUIUtility.IconContent("editicon.sml").image, "Edit"),
@@ -57,7 +48,7 @@ namespace LWGUI
 
 			// Edit button event
 			EditorGUI.BeginChangeCheck();
-			LwguiEditorGUIEX.LwguiGradientEditButton(editRect, _iconEdit, gradient, colorSpace, viewChannelMask, timeRange, () =>
+			LwguiGradientEditorHelper.GradientEditButton(editRect, _iconEdit, gradient, colorSpace, viewChannelMask, timeRange, () =>
 			{
 				// if the current edited texture is null, create new one
 				if (prop.textureValue == null)

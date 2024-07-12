@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Jason Ma
+
+using System;
 using UnityEngine;
 using UnityEditor;
-using LWGUI.Runtime;
+using LWGUI.Runtime.LwguiGradient;
 
-namespace LWGUI
+namespace LWGUI.LwguiGradientEditor
 {
     [System.AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public sealed class LwguiGradientUsageAttribute : PropertyAttribute
@@ -48,7 +50,7 @@ namespace LWGUI
             LwguiGradient gradient = (LwguiGradient)fieldInfo.GetValue(property.serializedObject.targetObject);
             
             EditorGUI.BeginChangeCheck();
-            LwguiEditorGUIEX.LwguiGradientField(position, label, gradient, colorSpace, viewChannelMask, timeRange);
+            LwguiGradientEditorHelper.GradientField(position, label, gradient, colorSpace, viewChannelMask, timeRange);
             if (EditorGUI.EndChangeCheck())
             {
                 // Debug.Log(11111111111);

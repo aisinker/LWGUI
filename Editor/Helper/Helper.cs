@@ -652,7 +652,7 @@ namespace LWGUI
 		{
 			materialAsset = null;
 			
-			var renderers = ReflectionHelper.GetMeshRenderersByMaterialEditor(metaDatas.perInspectorData.materialEditor);
+			var renderers = metaDatas.perInspectorData.materialEditor.GetMeshRenderersByMaterialEditor();
 			foreach (var renderer in renderers)
 			{
 				if (onFindMaterialAssetInRendererByMaterialInstance != null)

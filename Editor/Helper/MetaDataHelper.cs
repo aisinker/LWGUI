@@ -16,6 +16,7 @@ namespace LWGUI
 
 
 		#region Get Prop Data
+		
 		public PropertyStaticData GetPropStaticData(string propName) => perShaderData?.GetPropStaticData(propName);
 
 		public PropertyStaticData GetPropStaticData(MaterialProperty prop) => GetPropStaticData(prop.name);
@@ -27,15 +28,18 @@ namespace LWGUI
 		public MaterialProperty GetProperty(string propName) => GetPropDynamicData(propName)?.property;
 
 		public MaterialProperty GetDefaultProperty(string propName) => GetPropDynamicData(propName)?.defualtProperty;
+		
 		#endregion
 
 		#region Get Data Tuple
+		
 		// var (perShaderData, perMaterialData, perInspectorData) =
 		public (PerShaderData, PerMaterialData, PerInspectorData) GetDatas() => (perShaderData, perMaterialData, perInspectorData);
 
 		// var (propStaticData, propDynamicData) =
 		public (PropertyStaticData, PropertyDynamicData) GetPropDatas(MaterialProperty prop) =>
 			(GetPropStaticData(prop), GetPropDynamicData(prop));
+		
 		#endregion
 
 		public MaterialProperty[] GetProps() => perMaterialData.props;
@@ -167,24 +171,6 @@ namespace LWGUI
 			return str;
 		}
 
-		private static readonly string _tooltipString = "#";
-		private static readonly string _helpboxString = "%";
-
-		public static string GetPropertyDisplayName(Shader shader, MaterialProperty prop)
-		{
-			var tooltipIndex = prop.displayName.IndexOf(_tooltipString, StringComparison.Ordinal);
-			var helpboxIndex = prop.displayName.IndexOf(_helpboxString, StringComparison.Ordinal);
-			var minIndex = tooltipIndex == -1 ? helpboxIndex : tooltipIndex;
-			if (tooltipIndex != -1 && helpboxIndex != -1)
-				minIndex = Mathf.Min(minIndex, helpboxIndex);
-			if (minIndex == -1)
-				return prop.displayName;
-			else if (minIndex == 0)
-				return string.Empty;
-			else
-				return prop.displayName.Substring(0, minIndex);
-		}
-
 		public static bool GetPropertyVisibility(MaterialProperty prop, Material material, LWGUIMetaDatas metaDatas)
 		{
 			bool result = true;
@@ -218,16 +204,14 @@ namespace LWGUI
 
 		public static bool GetParentPropertyVisibility(PropertyStaticData parentPropStaticData, Material material, LWGUIMetaDatas metaDatas)
 		{
-			bool result = true;
-
 			if (parentPropStaticData != null
 			 && (!metaDatas.GetPropStaticData(parentPropStaticData.name).isExpanding
-			  || !MetaDataHelper.GetPropertyVisibility(metaDatas.GetProperty(parentPropStaticData.name), material, metaDatas)))
+			  || !GetPropertyVisibility(metaDatas.GetProperty(parentPropStaticData.name), material, metaDatas)))
 			{
-				result = false;
+				return false;
 			}
 
-			return result;
+			return true;
 		}
 	}
 }

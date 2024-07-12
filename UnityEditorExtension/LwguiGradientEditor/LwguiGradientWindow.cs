@@ -1,14 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Jason Ma
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using UnityEditor;
-using LWGUI.Runtime;
-using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
+using LWGUI.Runtime.LwguiGradient;
 
-namespace LWGUI
+namespace LWGUI.LwguiGradientEditor
 {
     public class LwguiGradientWindow : EditorWindow
     {
@@ -142,21 +141,20 @@ namespace LWGUI
 
         #region Gradient Editor
 
-        public static readonly int maxGradientKeyCount = (int)typeof(GradientEditor).GetField("k_MaxNumKeys", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-        public static readonly string[] timeRangeMenuNames = new string[] { "0-1", "0-24", "0-2400" };
-        public static readonly List<LwguiGradient.GradientTimeRange> timeRangeMenuValues = new () { LwguiGradient.GradientTimeRange.One, LwguiGradient.GradientTimeRange.TwentyFour, LwguiGradient.GradientTimeRange.TwentyFourHundred };
+        private static readonly string[] timeRangeMenuNames = new string[] { "0-1", "0-24", "0-2400" };
+        private static readonly List<LwguiGradient.GradientTimeRange> timeRangeMenuValues = new () { LwguiGradient.GradientTimeRange.One, LwguiGradient.GradientTimeRange.TwentyFour, LwguiGradient.GradientTimeRange.TwentyFourHundred };
 
         private GradientEditor.Swatch _selectedGradientKey
         {
-            get => typeof(GradientEditor).GetField("m_SelectedSwatch", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_gradientEditor) as GradientEditor.Swatch;
-            set => typeof(GradientEditor).GetField("m_SelectedSwatch", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(_gradientEditor, value);
+            get => _gradientEditor.GetSelectedSwatch();
+            set => _gradientEditor.SetSelectedSwatch(value);
         }
 
         private GradientEditor.Swatch _lastSelectedGradientKey;
         private GradientEditor.Swatch _deletedGradientKey;
 
-        private List<GradientEditor.Swatch> _gradientRGBSwatches => typeof(GradientEditor).GetField("m_RGBSwatches", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_gradientEditor) as List<GradientEditor.Swatch>;
-        private List<GradientEditor.Swatch> _gradientAlphaSwatches => typeof(GradientEditor).GetField("m_AlphaSwatches", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_gradientEditor) as List<GradientEditor.Swatch>;
+        private List<GradientEditor.Swatch> _gradientRGBSwatches => _gradientEditor.GetRGBdSwatches();
+        private List<GradientEditor.Swatch> _gradientAlphaSwatches => _gradientEditor.GetAlphaSwatches();
         private int _lastGradientRGBSwatchesCount;
         private int _lastGradientAlphaSwatchesCount;
         
@@ -180,8 +178,6 @@ namespace LWGUI
         private List<Keyframe> _deletedCurveKeys;
 
         private bool _shouldSyncSelectionFromCurveToGradient;
-
-        // private CurveMenuManager _curveMenuManager => new CurveMenuManager(_curveEditor);
         
         #endregion
 
@@ -200,7 +196,7 @@ namespace LWGUI
 
             var lwguiMergedCurves = new LwguiGradient.LwguiMergedColorCurves(lwguiGradient.rawCurves);
             _gradientEditor ??= new GradientEditor();
-            _gradientEditor.Init(lwguiMergedCurves.ToGradient(maxGradientKeyCount), 1024, colorSpace == ColorSpace.Linear, colorSpace);
+            _gradientEditor.Init(lwguiMergedCurves.ToGradient(ReflectionHelper.maxGradientKeyCount), 1024, colorSpace == ColorSpace.Linear, colorSpace);
             
             // When Curve has only one key, Gradient Editor will automatically add a key
             {
@@ -465,31 +461,23 @@ namespace LWGUI
         private void ShowGradientSwatchArray(Rect rect, List<GradientEditor.Swatch> swatches, LwguiGradient.ChannelMask drawingChannelMask)
         {
             // GradientEditor.ShowSwatchArray()
-            var s_Styles = Activator.CreateInstance(typeof(GradientEditor).GetNestedType("Styles", BindingFlags.NonPublic));
-            typeof(GradientEditor).GetField("s_Styles", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, s_Styles);
-
-            var showSwatchArrayMethed = typeof(GradientEditor)
-                .GetMethod("ShowSwatchArray", BindingFlags.Instance | BindingFlags.NonPublic, null, new []{typeof(Rect), typeof(List<GradientEditor.Swatch>), typeof(bool)}, null);
+            ReflectionHelper.GradientEditor_SetStyles();
 
             _isAddGradientKeyFailure = false;
-            
-            // int id = GUIUtility.GetControlID(652347689, FocusType.Passive);
-            // Event evt = Event.current;
-            // Debug.Log(evt.GetTypeForControl(id));
-            showSwatchArrayMethed.Invoke(_gradientEditor, new object[] { rect, (viewChannelMask & drawingChannelMask) != drawingChannelMask ? new List<GradientEditor.Swatch>() : swatches, drawingChannelMask == LwguiGradient.ChannelMask.Alpha });
+            _gradientEditor.ShowSwatchArray(rect, (viewChannelMask & drawingChannelMask) != drawingChannelMask ? new List<GradientEditor.Swatch>() : swatches, drawingChannelMask == LwguiGradient.ChannelMask.Alpha);
             
             // Since the maximum number of Gradient Keys is hard-coded in the engine, keys that exceed the limit can only be displayed and edited in the Curve Editor
             if (_isAddGradientKeyFailure)
             {
                 _changed = true;
                 _curveEditor.SelectNone();
-                float mouseSwatchTime = (float)typeof(GradientEditor).GetMethod("GetTime", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_gradientEditor, new object[] { (Event.current.mousePosition.x - rect.x) / rect.width });
+                float mouseSwatchTime = _gradientEditor.GetTime((Event.current.mousePosition.x - rect.x) / rect.width);
                 for (int c = 0; c < (int)LwguiGradient.Channel.Num; c++)
                 {
                     if (!LwguiGradient.IsChannelIndexInMask(c, drawingChannelMask))
                         continue;
                                 
-                    var curveSelection = typeof(CurveEditor).GetMethod("AddKeyAtTime", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_curveEditor, new object[] { _curveEditor.animationCurves[c], mouseSwatchTime }) as CurveSelection;
+                    var curveSelection = _curveEditor.AddKeyAtTime(_curveEditor.animationCurves[c], mouseSwatchTime);
                     _curveEditor.AddSelection(curveSelection);
                 }
                 _curveEditor.InvalidateSelectionBounds();
@@ -583,7 +571,7 @@ namespace LWGUI
                         // Add a new key
                         else
                         {
-                            var curveSelection = typeof(CurveEditor).GetMethod("AddKeyAtTime", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_curveEditor, new object[] { cw, _selectedGradientKey.m_Time }) as CurveSelection;
+                            var curveSelection = _curveEditor.AddKeyAtTime(cw, _selectedGradientKey.m_Time);
                             curveSelections.Add(curveSelection);
                             // _curveMenuManager.SetBothLinear(new List<KeyIdentifier>(){ new KeyIdentifier(_curveEditor.animationCurves[curveSelection.curveID].curve, curveSelection.curveID, curveSelection.key) });
                         }
@@ -666,7 +654,7 @@ namespace LWGUI
                 return;
 
             var firstOpenWindow = _curveEditor == null;
-            _curveEditor = typeof(CurveEditorWindow).GetField("m_CurveEditor", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(CurveEditorWindow.instance) as CurveEditor;
+            _curveEditor = CurveEditorWindow.instance.GetCurveEditor();
 
             var cws = new CurveWrapper[(int)LwguiGradient.Channel.Num];
             for (int c = 0; c < (int)LwguiGradient.Channel.Num; c++)
@@ -861,7 +849,7 @@ namespace LWGUI
         private void CheckAddGradientKeyFailureLog(string logString, string stackTrace, LogType type)
         {
             if (type == LogType.Warning
-                && logString == "Max " + maxGradientKeyCount + " color keys and " + maxGradientKeyCount + " alpha keys are allowed in a gradient.")
+                && logString == "Max " + ReflectionHelper.maxGradientKeyCount + " color keys and " + ReflectionHelper.maxGradientKeyCount + " alpha keys are allowed in a gradient.")
             {
                 _isAddGradientKeyFailure = true;
             }

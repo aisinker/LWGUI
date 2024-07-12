@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Jason Ma
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace LWGUI.Runtime
+namespace LWGUI.Runtime.LwguiGradient
 {
     [Serializable]
     public class LwguiGradient
@@ -336,7 +338,7 @@ namespace LWGUI.Runtime
                     {
                         curve.AddKey(new Keyframe(key.time, key.value).SetLinearTangentMode());
                     }
-                    curve.SetLinearTangent();
+                    curve.SetLinearTangents();
                     outCurves.Add(curve);
                 }
 

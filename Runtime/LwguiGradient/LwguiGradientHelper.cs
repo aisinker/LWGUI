@@ -1,23 +1,22 @@
-﻿using UnityEngine;
+﻿// Copyright (c) Jason Ma
 
+using UnityEngine;
 
 // Disable Keyframe.tangentMode obsolete warning
 #pragma warning disable 0618
 
 
-namespace LWGUI.Runtime
+namespace LWGUI.Runtime.LwguiGradient
 {
-    public static class ExtensionMethods
+    public static class LwguiGradientHelper
     {
-        #region Lwgui Gradient
-
         public static Keyframe SetLinearTangentMode(this Keyframe key)
         {
             key.tangentMode = 69;
             return key;
         }
 
-        public static void SetLinearTangent(this AnimationCurve curve)
+        public static void SetLinearTangents(this AnimationCurve curve)
         {
             for (int i = 1; i < curve.keys.Length; i++)
             {
@@ -30,7 +29,5 @@ namespace LWGUI.Runtime
                 curve.MoveKey(i, keyEnd);
             }
         }
-
-        #endregion
     }
 }

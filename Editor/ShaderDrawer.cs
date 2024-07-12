@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LWGUI.Runtime;
+using LWGUI.LwguiGradientEditor;
+using LWGUI.Runtime.LwguiGradient;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 namespace LWGUI
 {
@@ -167,7 +167,7 @@ namespace LWGUI
 		public virtual void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
 			RevertableHelper.FixGUIWidthMismatch(prop.type, editor);
-			ReflectionHelper.DefaultShaderPropertyInternal(editor, position, prop, label);
+			editor.DefaultShaderPropertyInternal(position, prop, label);
 		}
 	}
 
@@ -542,18 +542,17 @@ namespace LWGUI
 			var array = ReflectionHelper.GetAllTypes();
 			try
 			{
-				System.Type enumType =
-					((IEnumerable<System.Type>)array).FirstOrDefault<System.Type>((Func<System.Type, bool>)(x => x.IsSubclassOf(typeof(Enum)) && (x.Name == enumName || x.FullName == enumName)));
+				Type enumType = array.FirstOrDefault(x => x.IsSubclassOf(typeof(Enum)) && (x.Name == enumName || x.FullName == enumName));
 				string[] names = Enum.GetNames(enumType);
 				Array valuesArray = Enum.GetValues(enumType);
 				var values = new float[valuesArray.Length];
 				for (int index = 0; index < valuesArray.Length; ++index)
-					values[index] = (float)(int)valuesArray.GetValue(index);
+					values[index] = (int)valuesArray.GetValue(index);
 				Init(group, names, null, values);
 			}
 			catch (Exception ex)
 			{
-				Debug.LogWarningFormat("LWGUI: Failed to create SubEnum, enum {0} not found, {1}.", (object)enumName, ex);
+				Debug.LogWarningFormat("LWGUI: Failed to create SubEnum, enum {0} not found, {1}.", enumName, ex);
 				throw;
 			}
 		}
@@ -1453,8 +1452,8 @@ namespace LWGUI
 			public float           value              = 0;
 		}
 
-		private ShowIfData _showIfData = new ShowIfData();
-		private readonly Dictionary<string, string> _compareFunctionLUT = new Dictionary<string, string>()
+		private ShowIfData _showIfData = new();
+		private readonly Dictionary<string, string> _compareFunctionLUT = new()
 		{
 			{ "Less", "Less" },
 			{ "L", "Less" },

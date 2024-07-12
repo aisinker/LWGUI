@@ -7,6 +7,9 @@ using UnityEngine;
 
 namespace LWGUI
 {
+    /// <summary>
+    /// Used to exclude textures referenced by ImageDrawer in Build
+    /// </summary>
     public class ExcludeFromBuild : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         public static List<string> excludeAssetPaths = new List<string>();

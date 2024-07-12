@@ -9,180 +9,232 @@ using UnityEngine;
 
 namespace LWGUI
 {
-	public class ReflectionHelper
-	{
-		#region MaterialPropertyHandler
+    public static class ReflectionHelper
+    {
+        #region MaterialPropertyHandler
 
-		private static Type         MaterialPropertyHandler_Type                    = Assembly.GetAssembly(typeof(Editor)).GetType("UnityEditor.MaterialPropertyHandler");
-		private static MethodInfo   MaterialPropertyHandler_GetHandler_Method       = MaterialPropertyHandler_Type.GetMethod("GetHandler", BindingFlags.Static | BindingFlags.NonPublic);
-		private static PropertyInfo MaterialPropertyHandler_PropertyDrawer_Property = MaterialPropertyHandler_Type.GetProperty("propertyDrawer");
-		private static FieldInfo    MaterialPropertyHandler_DecoratorDrawers_Field  = MaterialPropertyHandler_Type.GetField("m_DecoratorDrawers", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly Type MaterialPropertyHandler_Type = Assembly.GetAssembly(typeof(Editor)).GetType("UnityEditor.MaterialPropertyHandler");
+        private static readonly MethodInfo MaterialPropertyHandler_GetHandler_Method = MaterialPropertyHandler_Type.GetMethod("GetHandler", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly PropertyInfo MaterialPropertyHandler_PropertyDrawer_Property = MaterialPropertyHandler_Type.GetProperty("propertyDrawer");
+        private static readonly FieldInfo MaterialPropertyHandler_DecoratorDrawers_Field = MaterialPropertyHandler_Type.GetField("m_DecoratorDrawers", BindingFlags.NonPublic | BindingFlags.Instance);
 
-		public static MaterialPropertyDrawer GetPropertyDrawer(Shader shader, MaterialProperty prop, out List<MaterialPropertyDrawer> decoratorDrawers)
-		{
-			decoratorDrawers = new List<MaterialPropertyDrawer>();
-			var handler = MaterialPropertyHandler_GetHandler_Method.Invoke(null, new System.Object[] { shader, prop.name });
-			if (handler != null && handler.GetType() == MaterialPropertyHandler_Type)
-			{
-				decoratorDrawers = MaterialPropertyHandler_DecoratorDrawers_Field.GetValue(handler) as List<MaterialPropertyDrawer>;
-				return MaterialPropertyHandler_PropertyDrawer_Property.GetValue(handler, null) as MaterialPropertyDrawer;
-			}
-			return null;
-		}
+        public static MaterialPropertyDrawer GetPropertyDrawer(Shader shader, MaterialProperty prop, out List<MaterialPropertyDrawer> decoratorDrawers)
+        {
+            decoratorDrawers = new List<MaterialPropertyDrawer>();
+            var handler = MaterialPropertyHandler_GetHandler_Method.Invoke(null, new object[] { shader, prop.name });
+            if (handler != null && handler.GetType() == MaterialPropertyHandler_Type)
+            {
+                decoratorDrawers = MaterialPropertyHandler_DecoratorDrawers_Field.GetValue(handler) as List<MaterialPropertyDrawer>;
+                return MaterialPropertyHandler_PropertyDrawer_Property.GetValue(handler, null) as MaterialPropertyDrawer;
+            }
 
-		public static MaterialPropertyDrawer GetPropertyDrawer(Shader shader, MaterialProperty prop)
-		{
-			List<MaterialPropertyDrawer> decoratorDrawers;
-			return GetPropertyDrawer(shader, prop, out decoratorDrawers);
-		}
+            return null;
+        }
 
-		#endregion
+        public static MaterialPropertyDrawer GetPropertyDrawer(Shader shader, MaterialProperty prop)
+        {
+            return GetPropertyDrawer(shader, prop, out _);
+        }
 
-
-		#region MaterialEditor
-
-		private static Type       MaterialEditor_Type                        = typeof(MaterialEditor);
-		private static MethodInfo MaterialEditor_DoPowerRangeProperty_Method = MaterialEditor_Type.GetMethod("DoPowerRangeProperty", BindingFlags.Static | BindingFlags.NonPublic);
-		private static MethodInfo MaterialEditor_DefaultShaderPropertyInternal_Method = MaterialEditor_Type.GetMethod("DefaultShaderPropertyInternal", BindingFlags.NonPublic | BindingFlags.Instance, null,
-																													  new[] { typeof(Rect), typeof(MaterialProperty), typeof(GUIContent) }, null);
-
-		public static float DoPowerRangeProperty(Rect position, MaterialProperty prop, GUIContent label, float power)
-		{
-			return (float)MaterialEditor_DoPowerRangeProperty_Method.Invoke(null, new System.Object[] { position, prop, label, power });
-		}
-
-		public static void DefaultShaderPropertyInternal(MaterialEditor editor, Rect position, MaterialProperty prop, GUIContent label)
-		{
-			MaterialEditor_DefaultShaderPropertyInternal_Method.Invoke(editor, new System.Object[] { position, prop, label });
-		}
-
-		public static List<MeshRenderer> GetMeshRenderersByMaterialEditor(MaterialEditor materialEditor)
-		{
-			var outRenderers = new List<MeshRenderer>();
-			
-			// MaterialEditor.ShouldEditorBeHidden()
-			PropertyEditor property = materialEditor.propertyViewer as PropertyEditor;
-			if (property)
-			{
-				GameObject gameObject = property.tracker.activeEditors[0].target as GameObject;
-				if (gameObject)
-				{
-					outRenderers.AddRange(gameObject.GetComponents<MeshRenderer>());
-				}
-			}
-
-			return outRenderers;
-		}
-
-		#endregion
+        #endregion
 
 
-		#region EditorUtility
-		private static Type			EditorUtility_Type = typeof(EditorUtility);
-		private static MethodInfo   EditorUtility_DisplayCustomMenuWithSeparators_Method = EditorUtility_Type.GetMethod("DisplayCustomMenuWithSeparators", BindingFlags.NonPublic | BindingFlags.Static, null,
-			new []{typeof(Rect), typeof(string[]), typeof(bool[]), typeof(bool[]), typeof(int[]), typeof(EditorUtility.SelectMenuItemFunction), typeof(object), typeof(bool)}, null);
+        #region MaterialEditor
 
-		public static void DisplayCustomMenuWithSeparators(Rect position, string[] options, bool[] enabled, bool[] separator, int[] selected, EditorUtility.SelectMenuItemFunction callback, object userData = null, bool showHotkey = false)
-		{
-			EditorUtility_DisplayCustomMenuWithSeparators_Method.Invoke(null, new System.Object[] { position, options, enabled, separator, selected, callback, userData, showHotkey });
-		}
+        public static float DoPowerRangeProperty(Rect position, MaterialProperty prop, GUIContent label, float power)
+        {
+            return MaterialEditor.DoPowerRangeProperty(position, prop, label, power);
+        }
 
-		#endregion
+        public static void DefaultShaderPropertyInternal(this MaterialEditor editor, Rect position, MaterialProperty prop, GUIContent label)
+        {
+            editor.DefaultShaderPropertyInternal(position, prop, label);
+        }
 
+        public static List<MeshRenderer> GetMeshRenderersByMaterialEditor(this MaterialEditor materialEditor)
+        {
+            var outRenderers = new List<MeshRenderer>();
 
-		#region EditorGUI
+            // MaterialEditor.ShouldEditorBeHidden()
+            PropertyEditor property = materialEditor.propertyViewer as PropertyEditor;
+            if (property)
+            {
+                GameObject gameObject = property.tracker.activeEditors[0].target as GameObject;
+                if (gameObject)
+                {
+                    outRenderers.AddRange(gameObject.GetComponents<MeshRenderer>());
+                }
+            }
 
-		private static Type         EditorGUI_Type            = typeof(EditorGUI);
-		private static PropertyInfo EditorGUI_Indent_Property = EditorGUI_Type.GetProperty("indent", BindingFlags.NonPublic | BindingFlags.Static);
+            return outRenderers;
+        }
 
-		public static float EditorGUI_Indent { get { return (float)EditorGUI_Indent_Property.GetValue(null, null); } }
-
-		#endregion
-
-		#region EditorGUILayout
-
-		private static Type         EditorGUILayout_Type						= typeof(EditorGUILayout);
-		private static PropertyInfo EditorGUILayout_kLabelFloatMinW_Property	= EditorGUILayout_Type.GetProperty("kLabelFloatMinW", BindingFlags.NonPublic | BindingFlags.Static);
-
-		public static float EditorGUILayout_kLabelFloatMinW { get { return (float)EditorGUILayout_kLabelFloatMinW_Property.GetValue(null, null); } }
-
-		#endregion
-
-
-		#region MaterialEnumDrawer
-
-		// UnityEditor.MaterialEnumDrawer(string enumName)
-		private static System.Type[] _types;
-
-		public static System.Type[] GetAllTypes()
-		{
-			if (_types == null)
-			{
-				_types = ((IEnumerable<Assembly>)AppDomain.CurrentDomain.GetAssemblies())
-						 .SelectMany<Assembly, System.Type>((Func<Assembly, IEnumerable<System.Type>>)
-															(assembly =>
-															{
-																if (assembly == null)
-																	return (IEnumerable<System.Type>)(new System.Type[0]);
-																try
-																{
-																	return (IEnumerable<System.Type>)assembly.GetTypes();
-																}
-																catch (ReflectionTypeLoadException ex)
-																{
-																	Debug.LogError(ex);
-																	return (IEnumerable<System.Type>)(new System.Type[0]);
-																}
-															})).ToArray<System.Type>();
-			}
-			return _types;
-		}
-
-		#endregion
+        #endregion
 
 
-		#region MaterialProperty.PropertyData
+        #region EditorUtility
+
+        public static void DisplayCustomMenuWithSeparators(Rect position, string[] options, bool[] enabled, bool[] separator, int[] selected, EditorUtility.SelectMenuItemFunction callback, object userData = null, bool showHotkey = false)
+        {
+            EditorUtility.DisplayCustomMenuWithSeparators(position, options, enabled, separator, selected, callback, userData, showHotkey);
+        }
+
+        #endregion
+
+
+        #region EditorGUI
+
+        public static float EditorGUI_Indent => EditorGUI.indentLevel;
+
+        #endregion
+
+        #region EditorGUILayout
+
+        public static float EditorGUILayout_kLabelFloatMinW => EditorGUILayout.kLabelFloatMinW;
+
+        #endregion
+
+
+        #region MaterialEnumDrawer
+
+        // UnityEditor.MaterialEnumDrawer(string enumName)
+        private static Type[] _types;
+
+        public static Type[] GetAllTypes()
+        {
+            if (_types == null)
+            {
+                _types = AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(assembly =>
+                    {
+                        if (assembly == null)
+                            return Type.EmptyTypes;
+                        try
+                        {
+                            return assembly.GetTypes();
+                        }
+                        catch (ReflectionTypeLoadException ex)
+                        {
+                            Debug.LogError(ex);
+                            return Type.EmptyTypes;
+                        }
+                    }).ToArray();
+            }
+
+            return _types;
+        }
+
+        #endregion
+
+
+        #region MaterialProperty.PropertyData
 
 #if UNITY_2022_1_OR_NEWER
-		private static Type			MaterialProperty_Type = typeof(MaterialProperty);
-		private static Type			PropertyData_Type = MaterialProperty_Type.GetNestedType("PropertyData", BindingFlags.NonPublic);
-		// MergeStack(out bool lockedInChildren, out bool lockedByAncestor, out bool overriden)
-		private static MethodInfo   PropertyData_MergeStack_Method = PropertyData_Type.GetMethod("MergeStack", BindingFlags.Static | BindingFlags.NonPublic);
-		// HandleApplyRevert(GenericMenu menu, bool singleEditing, UnityEngine.Object[] targets)
-		private static MethodInfo   PropertyData_HandleApplyRevert_Method = PropertyData_Type.GetMethod("HandleApplyRevert", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly Type MaterialProperty_Type = typeof(MaterialProperty);
+        private static readonly Type PropertyData_Type = MaterialProperty_Type.GetNestedType("PropertyData", BindingFlags.NonPublic);
+        private static readonly MethodInfo PropertyData_MergeStack_Method = PropertyData_Type.GetMethod("MergeStack", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo PropertyData_HandleApplyRevert_Method = PropertyData_Type.GetMethod("HandleApplyRevert", BindingFlags.Static | BindingFlags.NonPublic);
 
-		public static void HandleApplyRevert(GenericMenu menu, MaterialProperty prop)
-		{
-			System.Object[] parameters = new System.Object[3];
-			ReflectionHelper.PropertyData_MergeStack_Method.Invoke(null, parameters);
-			bool lockedInChildren = (bool)parameters[0];
-			bool lockedByAncestor = (bool)parameters[1];
-			bool overriden = (bool)parameters[2];
-			bool singleEditing = prop.targets.Length == 1;
+        public static void HandleApplyRevert(GenericMenu menu, MaterialProperty prop)
+        {
+            var parameters = new object[3];
+            PropertyData_MergeStack_Method.Invoke(null, parameters);
+            var overriden = (bool)parameters[2];
+            var singleEditing = prop.targets.Length == 1;
 
-			if (overriden)
-			{
-				ReflectionHelper.PropertyData_HandleApplyRevert_Method.Invoke(null, new System.Object[]{menu, singleEditing, prop.targets});
-				menu.AddSeparator("");
-			}
-		}
+            if (overriden)
+            {
+                PropertyData_HandleApplyRevert_Method.Invoke(null, new object[] { menu, singleEditing, prop.targets });
+                menu.AddSeparator("");
+            }
+        }
 #endif
 
-		#endregion
+        #endregion
 
-		#region GUI
+        #region GUI
 
-		private static readonly MethodInfo gui_Button_Methed = typeof(GUI).GetMethod("Button", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo gui_Button_Method = typeof(GUI).GetMethod("Button", BindingFlags.Static | BindingFlags.NonPublic);
 
-		public static bool GUI_Button(Rect position, int id, GUIContent content, GUIStyle style) =>
-			(bool)gui_Button_Methed.Invoke(null, new object[] { position, id, content, style });
+        public static bool GUI_Button(Rect position, int id, GUIContent content, GUIStyle style)
+        {
+            return (bool)gui_Button_Method.Invoke(null, new object[] { position, id, content, style });
+        }
 
-		#endregion
+        #endregion
 
-		#region Animation
+        #region GradientEditor
 
-		public static void AnimationUtility_UpdateTangentsFromMode(AnimationCurve curve) => AnimationUtility.UpdateTangentsFromMode(curve);
+        private static readonly FieldInfo k_MaxNumKeys_Field = typeof(GradientEditor).GetField("k_MaxNumKeys", BindingFlags.Static | BindingFlags.NonPublic);
+        public static readonly int maxGradientKeyCount = (int)k_MaxNumKeys_Field.GetValue(null);
 
-		#endregion
-	}
+
+        private static readonly FieldInfo m_SelectedSwatch_Field = typeof(GradientEditor).GetField("m_SelectedSwatch", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static GradientEditor.Swatch GetSelectedSwatch(this GradientEditor gradientEditor)
+        {
+            return m_SelectedSwatch_Field.GetValue(gradientEditor) as GradientEditor.Swatch;
+        }
+
+        internal static void SetSelectedSwatch(this GradientEditor gradientEditor, GradientEditor.Swatch swatch)
+        {
+            m_SelectedSwatch_Field.SetValue(gradientEditor, swatch);
+        }
+
+
+        private static readonly FieldInfo m_RGBSwatches_Field = typeof(GradientEditor).GetField("m_RGBSwatches", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static List<GradientEditor.Swatch> GetRGBdSwatches(this GradientEditor gradientEditor)
+        {
+            return m_RGBSwatches_Field.GetValue(gradientEditor) as List<GradientEditor.Swatch>;
+        }
+
+
+        private static readonly FieldInfo m_AlphaSwatches_Field = typeof(GradientEditor).GetField("m_AlphaSwatches", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static List<GradientEditor.Swatch> GetAlphaSwatches(this GradientEditor gradientEditor)
+        {
+            return m_AlphaSwatches_Field.GetValue(gradientEditor) as List<GradientEditor.Swatch>;
+        }
+
+
+        private static readonly object s_Styles_Value = Activator.CreateInstance(typeof(GradientEditor).GetNestedType("Styles", BindingFlags.NonPublic));
+        private static readonly FieldInfo s_Styles_Field = typeof(GradientEditor).GetField("s_Styles", BindingFlags.Static | BindingFlags.NonPublic);
+        public static void GradientEditor_SetStyles()
+        {
+            s_Styles_Field.SetValue(null, s_Styles_Value);
+        }
+
+
+        private static readonly MethodInfo ShowSwatchArray_Method = typeof(GradientEditor)
+            .GetMethod("ShowSwatchArray", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Rect), typeof(List<GradientEditor.Swatch>), typeof(bool) }, null);
+
+        internal static void ShowSwatchArray(this GradientEditor gradientEditor, Rect position, List<GradientEditor.Swatch> swatches, bool isAlpha)
+        {
+            ShowSwatchArray_Method.Invoke(gradientEditor, new object[] { position, swatches, isAlpha });
+        }
+
+
+        private static readonly MethodInfo GetTime_Method = typeof(GradientEditor).GetMethod("GetTime", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static float GetTime(this GradientEditor gradientEditor, float actualTime)
+        {
+            return (float)GetTime_Method.Invoke(gradientEditor, new object[] { actualTime });
+        }
+
+        #endregion
+
+        #region CurveEditor
+
+        private static readonly FieldInfo m_CurveEditor_Field = typeof(CurveEditorWindow).GetField("m_CurveEditor", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static CurveEditor GetCurveEditor(this CurveEditorWindow curveEditorWindow)
+        {
+            return m_CurveEditor_Field.GetValue(curveEditorWindow) as CurveEditor;
+        }
+
+
+        private static readonly MethodInfo AddKeyAtTime_Method = typeof(CurveEditor).GetMethod("AddKeyAtTime", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static CurveSelection AddKeyAtTime(this CurveEditor curveEditor, CurveWrapper cw, float time)
+        {
+            return AddKeyAtTime_Method.Invoke(curveEditor, new object[] { curveEditor, cw, time }) as CurveSelection;
+        }
+
+        #endregion
+    }
 }

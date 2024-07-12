@@ -1,17 +1,18 @@
-﻿using System;
-using System.Reflection;
+﻿// Copyright (c) Jason Ma
+
+using System;
 using UnityEditor;
 using UnityEngine;
-using LWGUI.Runtime;
+using LWGUI.Runtime.LwguiGradient;
 
-namespace LWGUI
+namespace LWGUI.LwguiGradientEditor
 {
-    public static class LwguiEditorGUIEX
+    public static class LwguiGradientEditorHelper
     {
         private static readonly int s_LwguiGradientHash = "s_LwguiGradientHash".GetHashCode();
         private static int s_LwguiGradientID;
 
-        public static void LwguiGradientField(Rect position, GUIContent label, LwguiGradient gradient, 
+        public static void GradientField(Rect position, GUIContent label, LwguiGradient gradient, 
             ColorSpace colorSpace = ColorSpace.Gamma, 
             LwguiGradient.ChannelMask viewChannelMask = LwguiGradient.ChannelMask.All, 
             LwguiGradient.GradientTimeRange timeRange = LwguiGradient.GradientTimeRange.One)
@@ -70,7 +71,7 @@ namespace LWGUI
             }
         }
 
-        public static bool LwguiGradientEditButton(Rect position, GUIContent icon, LwguiGradient gradient,
+        public static bool GradientEditButton(Rect position, GUIContent icon, LwguiGradient gradient,
             ColorSpace colorSpace = ColorSpace.Gamma,
             LwguiGradient.ChannelMask viewChannelMask = LwguiGradient.ChannelMask.All,
             LwguiGradient.GradientTimeRange timeRange = LwguiGradient.GradientTimeRange.One,
