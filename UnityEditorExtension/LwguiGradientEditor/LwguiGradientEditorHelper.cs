@@ -71,20 +71,20 @@ namespace LWGUI.LwguiGradientEditor
                     }
                     break;
                 case EventType.KeyDown:
-                    // if (GUIUtility.keyboardControl == id && (current.keyCode == KeyCode.Space || current.keyCode == KeyCode.Return || current.keyCode == KeyCode.KeypadEnter))
-                    // {
-                    //     UnityEngine.Event.current.Use();
-                    //     GradientPicker.Show(property != null ? property.gradientValue : value, hdr, space);
-                    //     GUIUtility.ExitGUI();
-                    //     break;
-                    // }
+                    if (GUIUtility.keyboardControl == id && (evt.keyCode == KeyCode.Space || evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter))
+                    {
+                        evt.Use();
+                        LwguiGradientWindow.Show(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
+                        GUIUtility.ExitGUI();
+                    }
 
                     break;
                 case EventType.Repaint:
-                    var previewRect = new Rect(rect.x + 2.5f, rect.y + 2.5f, rect.width - 5.0f, rect.height - 5.0f);
-                    EditorGUI.DrawPreviewTexture(previewRect, gradient.GetPreviewRampTexture(256, 1, colorSpace, viewChannelMask));
-                    var outlineRect = new Rect(rect.x + 0.5f, rect.y + 0.5f, rect.width - 1.0f, rect.height - 1.0f);
-                    EditorStyles.colorPickerBox.Draw(outlineRect, GUIContent.none, id);
+                    DrawGradientWithBackground(rect, gradient, colorSpace, viewChannelMask);
+                    // var previewRect = new Rect(rect.x + 2.5f, rect.y + 2.5f, rect.width - 5.0f, rect.height - 5.0f);
+                    // EditorGUI.DrawPreviewTexture(previewRect, gradient.GetPreviewRampTexture(256, 1, colorSpace, viewChannelMask));
+                    // var outlineRect = new Rect(rect.x + 0.5f, rect.y + 0.5f, rect.width - 1.0f, rect.height - 1.0f);
+                    // EditorStyles.colorPickerBox.Draw(outlineRect, GUIContent.none, id);
                     break;
                 case EventType.ExecuteCommand:
                     // When drawing the modifying Gradient Field and it has changed
@@ -97,6 +97,25 @@ namespace LWGUI.LwguiGradientEditor
                     }
                     break;
             }
+        }
+
+        /// Lwgui Gradient Field with full Undo/Redo/ContextMenu functions
+        public static void GradientField(Rect position, GUIContent label, SerializedProperty property, LwguiGradient gradient, 
+            ColorSpace colorSpace = ColorSpace.Gamma, 
+            LwguiGradient.ChannelMask viewChannelMask = LwguiGradient.ChannelMask.All, 
+            LwguiGradient.GradientTimeRange timeRange = LwguiGradient.GradientTimeRange.One)
+        {
+            label = EditorGUI.BeginProperty(position, label, property);
+            EditorGUI.BeginChangeCheck();
+            
+            GradientField(position, label, gradient, colorSpace, viewChannelMask, timeRange);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                GUI.changed = true;
+                property.serializedObject.UpdateIfRequiredOrScript();
+            }
+            EditorGUI.EndProperty();
         }
 
         public static bool GradientEditButton(Rect position, GUIContent icon, LwguiGradient gradient,

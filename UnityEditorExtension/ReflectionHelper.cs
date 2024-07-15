@@ -195,10 +195,11 @@ namespace LWGUI
         }
 
 
-        private static readonly object s_Styles_Value = Activator.CreateInstance(typeof(GradientEditor).GetNestedType("Styles", BindingFlags.NonPublic));
+        private static object s_Styles_Value;
         private static readonly FieldInfo s_Styles_Field = typeof(GradientEditor).GetField("s_Styles", BindingFlags.Static | BindingFlags.NonPublic);
         public static void GradientEditor_SetStyles()
         {
+            s_Styles_Value ??= Activator.CreateInstance(typeof(GradientEditor).GetNestedType("Styles", BindingFlags.NonPublic));
             s_Styles_Field.SetValue(null, s_Styles_Value);
         }
 
