@@ -232,7 +232,7 @@ namespace LWGUI
         private static readonly MethodInfo AddKeyAtTime_Method = typeof(CurveEditor).GetMethod("AddKeyAtTime", BindingFlags.Instance | BindingFlags.NonPublic);
         internal static CurveSelection AddKeyAtTime(this CurveEditor curveEditor, CurveWrapper cw, float time)
         {
-            return AddKeyAtTime_Method.Invoke(curveEditor, new object[] { curveEditor, cw, time }) as CurveSelection;
+            return AddKeyAtTime_Method.Invoke(curveEditor, new object[] { cw, time }) as CurveSelection;
         }
 
         #endregion

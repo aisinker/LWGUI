@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using UnityEditor;
 using LWGUI.Runtime.LwguiGradient;
+using UnityEngine.Serialization;
 
 namespace LWGUI.LwguiGradientEditor
 {
@@ -33,7 +34,7 @@ namespace LWGUI.LwguiGradientEditor
 
         private LwguiGradientEditor _lwguiGradientEditor;
         private PresetLibraryLwguiGradientEditor _lwguiGradientLibraryEditor;
-        [SerializeField] private PresetLibraryEditorState m_GradientLibraryEditorState;
+        [SerializeField] private PresetLibraryEditorState _LwguiGradientLibraryEditorState;
         
         [NonSerialized] public LwguiGradient lwguiGradient;
         [NonSerialized] public ColorSpace colorSpace;
@@ -92,10 +93,10 @@ namespace LWGUI.LwguiGradientEditor
                 _lwguiGradientEditor.Init(_gradientEditorRect, lwguiGradient, colorSpace, viewChannelMask, gradientTimeRange, _onChange);
             }
             
-            if (m_GradientLibraryEditorState == null || forceRecreate)
+            if (_LwguiGradientLibraryEditorState == null || forceRecreate)
             {
-                m_GradientLibraryEditorState = new PresetLibraryEditorState(presetsEditorPrefID);
-                m_GradientLibraryEditorState.TransferEditorPrefsState(true);
+                _LwguiGradientLibraryEditorState = new PresetLibraryEditorState(presetsEditorPrefID);
+                _LwguiGradientLibraryEditorState.TransferEditorPrefsState(true);
             }
             
             if (_lwguiGradientLibraryEditor == null || force || forceRecreate)
@@ -103,7 +104,7 @@ namespace LWGUI.LwguiGradientEditor
                 if (_lwguiGradientLibraryEditor == null || forceRecreate)
                 {
                     var saveLoadHelper = new ScriptableObjectSaveLoadHelper<LwguiGradientPresetLibrary>("lwguigradients", SaveType.Text);
-                    _lwguiGradientLibraryEditor = new PresetLibraryLwguiGradientEditor(saveLoadHelper, m_GradientLibraryEditorState, PresetClickedCallback);
+                    _lwguiGradientLibraryEditor = new PresetLibraryLwguiGradientEditor(saveLoadHelper, _LwguiGradientLibraryEditorState, PresetClickedCallback);
                 }
                 _lwguiGradientLibraryEditor.showHeader = true;
                 _lwguiGradientLibraryEditor.colorSpace = colorSpace;
@@ -131,7 +132,7 @@ namespace LWGUI.LwguiGradientEditor
             {
                 _lwguiGradientWindow = GetWindow();
                 _lwguiGradientWindow.minSize = _minWindowSize;
-                Undo.undoRedoEvent += _lwguiGradientWindow.OnUndoPerformed;
+                _lwguiGradientWindow.RegisterEvents();
             }
             else
             {
@@ -184,7 +185,9 @@ namespace LWGUI.LwguiGradientEditor
             _lwguiGradientEditor.OnGUI(_gradientEditorRect);
             if (EditorGUI.EndChangeCheck())
                 _changed = true;
+            
             _lwguiGradientLibraryEditor.OnGUI(_presetLibraryRect, lwguiGradient);
+            
             if (_changed)
             {
                 _changed = false;
@@ -220,7 +223,7 @@ namespace LWGUI.LwguiGradientEditor
         {
             Application.logMessageReceived -= LwguiGradientEditor.CheckAddGradientKeyFailureLog;
 
-            m_GradientLibraryEditorState?.TransferEditorPrefsState(false);
+            _LwguiGradientLibraryEditorState?.TransferEditorPrefsState(false);
 
             UnregisterEvents();
             Clear();
@@ -240,17 +243,32 @@ namespace LWGUI.LwguiGradientEditor
             _lwguiGradientWindow = null;
         }
 
-        private void UnregisterEvents()
+        private void RegisterEvents()
         {
-            Undo.undoRedoEvent -= OnUndoPerformed;
+#if UNITY_2022_2_OR_NEWER
+            Undo.undoRedoEvent += OnUndoPerformed;
+#endif
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
+        private void UnregisterEvents()
+        {
+#if UNITY_2022_2_OR_NEWER
+            Undo.undoRedoEvent -= OnUndoPerformed;
+#endif
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+        }
+
+        #region Call Backs
+
+#if UNITY_2022_2_OR_NEWER
         private void OnUndoPerformed(in UndoRedoInfo info)
         {
             Init();
         }
+#endif
 
-        void OnPlayModeStateChanged()
+        void OnPlayModeStateChanged(PlayModeStateChange state)
         {
             Close();
         }
@@ -265,5 +283,7 @@ namespace LWGUI.LwguiGradientEditor
             // UnityEditorInternal.GradientPreviewCache.ClearCache();
             _changed = true;
         }
+
+        #endregion
     }
 }
