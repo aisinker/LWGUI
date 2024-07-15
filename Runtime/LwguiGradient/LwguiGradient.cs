@@ -71,6 +71,21 @@ namespace LWGUI.Runtime.LwguiGradient
                 _curves.Add(defaultCurve);
         }
 
+        public LwguiGradient(LwguiGradient src)
+        {
+            _curves = new List<AnimationCurve>();
+            for (int c = 0; c < (int)Channel.Num; c++)
+                _curves.Add(new AnimationCurve());
+
+            for (int c = 0; c < src._curves.Count; c++)
+            {
+                foreach (var key in src._curves[c].keys)
+                {
+                    _curves[c].AddKey(key);
+                }
+            }
+        }
+
         public LwguiGradient(params Keyframe[] keys)
         {
             _curves = new List<AnimationCurve>();

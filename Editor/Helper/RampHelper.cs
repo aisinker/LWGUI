@@ -66,7 +66,7 @@ namespace LWGUI
 			if (EditorGUI.EndChangeCheck())
 			{
 				hasChange = true;
-				gradient = LwguiGradientWindow.lwguiGradient;
+				gradient = LwguiGradientWindow.instance.lwguiGradient;
 			}
 
 			// Create button

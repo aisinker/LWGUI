@@ -12,6 +12,34 @@ namespace LWGUI.LwguiGradientEditor
         private static readonly int s_LwguiGradientHash = "s_LwguiGradientHash".GetHashCode();
         private static int s_LwguiGradientID;
 
+        public static void DrawGradientWithBackground(Rect position, LwguiGradient gradient, ColorSpace colorSpace, LwguiGradient.ChannelMask viewChannelMask)
+        {
+            Texture2D gradientTexture = gradient.GetPreviewRampTexture(256, 1, colorSpace, viewChannelMask);
+            Rect r2 = new Rect(position.x + 1, position.y + 1, position.width - 2, position.height - 2);
+
+            // Background checkers
+            Texture2D backgroundTexture = GradientEditor.GetBackgroundTexture();
+            Rect texCoordsRect = new Rect(0, 0, r2.width / backgroundTexture.width, r2.height / backgroundTexture.height);
+            GUI.DrawTextureWithTexCoords(r2, backgroundTexture, texCoordsRect, false);
+
+            // Outline for Gradinet Texture, used to be Frame over texture.
+            GUI.Box(position, GUIContent.none);
+
+            // Gradient texture
+            Color oldColor = GUI.color;
+            GUI.color = Color.white;            //Dont want the Playmode tint to be applied to gradient textures.
+            if (gradientTexture != null)
+                GUI.DrawTexture(r2, gradientTexture, ScaleMode.StretchToFill, true);
+            GUI.color = oldColor;
+
+            // HDR label
+            // float maxColorComponent = GetMaxColorComponent(gradient);
+            // if (maxColorComponent > 1.0f)
+            // {
+            //     GUI.Label(new Rect(position.x, position.y, position.width - 3, position.height), "HDR", EditorStyles.centeredGreyMiniLabel);
+            // }
+        }
+
         public static void GradientField(Rect position, GUIContent label, LwguiGradient gradient, 
             ColorSpace colorSpace = ColorSpace.Gamma, 
             LwguiGradient.ChannelMask viewChannelMask = LwguiGradient.ChannelMask.All, 
@@ -31,7 +59,7 @@ namespace LWGUI.LwguiGradientEditor
                         {
                             s_LwguiGradientID = id;
                             GUIUtility.keyboardControl = id;
-                            LwguiGradientWindow.ShowWindow(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
+                            LwguiGradientWindow.Show(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
                             GUIUtility.ExitGUI();
                         }
                         else if (evt.button == 1)
@@ -61,7 +89,7 @@ namespace LWGUI.LwguiGradientEditor
                 case EventType.ExecuteCommand:
                     // When drawing the modifying Gradient Field and it has changed
                     if ((GUIUtility.keyboardControl == id || s_LwguiGradientID == id)
-                        && evt.commandName == LwguiGradientWindow.onChangeCommandName)
+                        && evt.commandName == LwguiGradientWindow.LwguiGradientChangedCommand)
                     {
                         // evt.Use();
                         GUI.changed = true;
@@ -83,7 +111,7 @@ namespace LWGUI.LwguiGradientEditor
             // When drawing the modifying Gradient Field and it has changed
             if ((GUIUtility.keyboardControl == id || s_LwguiGradientID == id)
                 && evt.GetTypeForControl(id) == EventType.ExecuteCommand 
-                && evt.commandName == LwguiGradientWindow.onChangeCommandName)
+                && evt.commandName == LwguiGradientWindow.LwguiGradientChangedCommand)
             {
                 GUI.changed = true;
                 HandleUtility.Repaint();
@@ -96,7 +124,7 @@ namespace LWGUI.LwguiGradientEditor
                 {
                     s_LwguiGradientID = id;
                     GUIUtility.keyboardControl = id;
-                    LwguiGradientWindow.ShowWindow(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
+                    LwguiGradientWindow.Show(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
                     GUIUtility.ExitGUI();
                 }
             }
