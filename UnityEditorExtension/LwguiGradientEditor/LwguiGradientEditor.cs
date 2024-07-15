@@ -123,16 +123,17 @@ namespace LWGUI.LwguiGradientEditor
         #region Inputs
 
         private Rect _position;
-        private LwguiGradient _lwguiGradient;
-        private ColorSpace _colorSpace;
-        private LwguiGradient.ChannelMask _viewChannelMask;
-        private LwguiGradient.GradientTimeRange _gradientTimeRange;
+        internal LwguiGradient lwguiGradient;
+        internal ColorSpace colorSpace;
+        internal LwguiGradient.ChannelMask viewChannelMask;
+        internal LwguiGradient.GradientTimeRange gradientTimeRange;
         private Action<LwguiGradient> _onChange;
         
         #endregion
 
         private GradientEditor _gradientEditor;
         private CurveEditor _curveEditor;
+        private bool _viewSettingschanged;
         private bool _changed;
         private bool _lastChanged;
 
@@ -181,15 +182,15 @@ namespace LWGUI.LwguiGradientEditor
 
         #region Gradient Editor
 
-        private void InitGradientEditor(bool force = false, bool keepSelectedKeyValue = false)
+        private void InitGradientEditor(bool force = false)
         {
             if (_gradientEditor != null && !force) return;
 
             var lastSelectedGradientKey = _gradientEditor != null && _selectedGradientKey != null ? new GradientEditor.Swatch(_selectedGradientKey.m_Time, _selectedGradientKey.m_Value, _selectedGradientKey.m_IsAlpha) : null;
 
-            var lwguiMergedCurves = new LwguiGradient.LwguiMergedColorCurves(_lwguiGradient.rawCurves);
+            var lwguiMergedCurves = new LwguiGradient.LwguiMergedColorCurves(lwguiGradient.rawCurves);
             _gradientEditor ??= new GradientEditor();
-            _gradientEditor.Init(lwguiMergedCurves.ToGradient(ReflectionHelper.maxGradientKeyCount), 1024, _colorSpace == ColorSpace.Linear, _colorSpace);
+            _gradientEditor.Init(lwguiMergedCurves.ToGradient(ReflectionHelper.maxGradientKeyCount), 1024, colorSpace == ColorSpace.Linear, colorSpace);
             
             // When Curve has only one key, Gradient Editor will automatically add a key
             {
@@ -218,8 +219,6 @@ namespace LWGUI.LwguiGradientEditor
             {
                 _selectedGradientKey = (lastSelectedGradientKey.m_IsAlpha ? _gradientAlphaSwatches : _gradientRGBSwatches)
                     .Find(swatch => Equal(swatch.m_Time, lastSelectedGradientKey.m_Time));
-                if (keepSelectedKeyValue && _selectedGradientKey != null)
-                    _selectedGradientKey.m_Value = lastSelectedGradientKey.m_Value;
             }
             else
             {
@@ -231,8 +230,8 @@ namespace LWGUI.LwguiGradientEditor
         {
             OnGradientEditFieldGUI();
             
-            EditorGUI.DrawPreviewTexture(_alphaGradientRect, _lwguiGradient.GetPreviewRampTexture(1024, 1, _colorSpace, LwguiGradient.ChannelMask.Alpha & _viewChannelMask));
-            EditorGUI.DrawPreviewTexture(_rgbGradientRect, _lwguiGradient.GetPreviewRampTexture(1024, 1, _colorSpace, LwguiGradient.ChannelMask.RGB & _viewChannelMask));
+            EditorGUI.DrawPreviewTexture(_alphaGradientRect, lwguiGradient.GetPreviewRampTexture(1024, 1, colorSpace, LwguiGradient.ChannelMask.Alpha & viewChannelMask));
+            EditorGUI.DrawPreviewTexture(_rgbGradientRect, lwguiGradient.GetPreviewRampTexture(1024, 1, colorSpace, LwguiGradient.ChannelMask.RGB & viewChannelMask));
 
             // Swatch Array
             {
@@ -279,9 +278,10 @@ namespace LWGUI.LwguiGradientEditor
                 var labelWidth = EditorGUIUtility.labelWidth;
                 EditorGUIUtility.labelWidth = colorSpaceTextWidth;
                 EditorGUI.BeginChangeCheck();
-                _colorSpace = EditorGUI.Toggle(rect, "sRGB Preview", _colorSpace == ColorSpace.Gamma) ? ColorSpace.Gamma : ColorSpace.Linear;
+                colorSpace = EditorGUI.Toggle(rect, "sRGB Preview", colorSpace == ColorSpace.Gamma) ? ColorSpace.Gamma : ColorSpace.Linear;
                 if (EditorGUI.EndChangeCheck())
                 {
+                    _viewSettingschanged = true;
                     InitGradientEditor(true);
                 }
                 EditorGUIUtility.labelWidth = labelWidth;
@@ -294,9 +294,10 @@ namespace LWGUI.LwguiGradientEditor
                 var labelWidth = EditorGUIUtility.labelWidth;
                 EditorGUIUtility.labelWidth = channelsTextWidth;
                 EditorGUI.BeginChangeCheck();
-                _viewChannelMask = (LwguiGradient.ChannelMask)EditorGUI.EnumFlagsField(rect, "Channels", _viewChannelMask);
+                viewChannelMask = (LwguiGradient.ChannelMask)EditorGUI.EnumFlagsField(rect, "Channels", viewChannelMask);
                 if (EditorGUI.EndChangeCheck())
                 {
+                    _viewSettingschanged = true;
                     InitGradientEditor(true);
                     InitCurveEditor(true);
                 }
@@ -311,9 +312,10 @@ namespace LWGUI.LwguiGradientEditor
                 EditorGUIUtility.labelWidth = timeRangeTextWidth;
                 EditorGUI.BeginChangeCheck();
                 
-                _gradientTimeRange = timeRangeMenuValues[EditorGUI.Popup(rect, "Time Range", timeRangeMenuValues.IndexOf(_gradientTimeRange), timeRangeMenuNames)];
+                gradientTimeRange = timeRangeMenuValues[EditorGUI.Popup(rect, "Time Range", timeRangeMenuValues.IndexOf(gradientTimeRange), timeRangeMenuNames)];
                 if (EditorGUI.EndChangeCheck())
                 {
+                    _viewSettingschanged = true;
                     InitGradientEditor(true);
                     InitCurveEditor(true);
                 }
@@ -342,7 +344,7 @@ namespace LWGUI.LwguiGradientEditor
                     EditorGUIUtility.labelWidth = locationTextWidth;
                     EditorGUI.showMixedValue = selectionInfo.hasMixedTime;
                     EditorGUI.BeginChangeCheck();
-                    var newTime = EditorGUI.FloatField(rect, "Time", selectionInfo.selectedTime * (int)_gradientTimeRange) / (int)_gradientTimeRange;
+                    var newTime = EditorGUI.FloatField(rect, "Time", selectionInfo.selectedTime * (int)gradientTimeRange) / (int)gradientTimeRange;
                     // When two keys have the same time, they will be merged, so avoid modifying the time in real time and only apply the changes at the end of the change
                     var hasChange = EditorGUI.EndChangeCheck();
                     if (hasChange) _lastEditingTime = newTime;
@@ -411,7 +413,7 @@ namespace LWGUI.LwguiGradientEditor
                     {
                         EditorGUI.showMixedValue = selectionInfo.hasMixedColorValue;
                         var newColorValue = new Vector4(selectionInfo.selectedVectorValue.x, selectionInfo.selectedVectorValue.y, selectionInfo.selectedVectorValue.z, 1);
-                        newColorValue = EditorGUI.ColorField(rect, new GUIContent("Value"), newColorValue, true, false, _colorSpace == ColorSpace.Linear);
+                        newColorValue = EditorGUI.ColorField(rect, new GUIContent("Value"), newColorValue, true, false, colorSpace == ColorSpace.Linear);
                         newColorValue.w = selectionInfo.selectedVectorValue.w;
                         if (EditorGUI.EndChangeCheck())
                         {
@@ -457,7 +459,7 @@ namespace LWGUI.LwguiGradientEditor
             ReflectionHelper.GradientEditor_SetStyles();
 
             _isAddGradientKeyFailure = false;
-            _gradientEditor.ShowSwatchArray(rect, (_viewChannelMask & drawingChannelMask) != drawingChannelMask ? new List<GradientEditor.Swatch>() : swatches, drawingChannelMask == LwguiGradient.ChannelMask.Alpha);
+            _gradientEditor.ShowSwatchArray(rect, (viewChannelMask & drawingChannelMask) != drawingChannelMask ? new List<GradientEditor.Swatch>() : swatches, drawingChannelMask == LwguiGradient.ChannelMask.Alpha);
             
             // Since the maximum number of Gradient Keys is hard-coded in the engine, keys that exceed the limit can only be displayed and edited in the Curve Editor
             if (_isAddGradientKeyFailure)
@@ -498,7 +500,7 @@ namespace LWGUI.LwguiGradientEditor
                 // Del a key
                 || (delRGBKey || delAlphaKey))
             {
-                foreach (var curveSelection in _selectedCurves.Where(selection => LwguiGradient.IsChannelIndexInMask(selection.curveID, _viewChannelMask)))
+                foreach (var curveSelection in _selectedCurves.Where(selection => LwguiGradient.IsChannelIndexInMask(selection.curveID, viewChannelMask)))
                 {
                     var cw = _curveEditor.animationCurves[curveSelection.curveID];
                     var key = cw.curve.keys[curveSelection.key];
@@ -542,7 +544,7 @@ namespace LWGUI.LwguiGradientEditor
 
                 for (int c = 0; c < (int)LwguiGradient.Channel.Num; c++)
                 {
-                    if (!LwguiGradient.IsChannelIndexInMask(c, _viewChannelMask))
+                    if (!LwguiGradient.IsChannelIndexInMask(c, viewChannelMask))
                         continue;
                     
                     // Add a RGB Key
@@ -578,7 +580,7 @@ namespace LWGUI.LwguiGradientEditor
                 _deletedCurveKeys = null;
                 _curveEditor.SelectNone();
                 curveSelections.ForEach(selection => _curveEditor.AddSelection(selection));
-                InitGradientEditor(true, true);
+                InitGradientEditor(true);
             }
             
             _curveEditor.InvalidateSelectionBounds();
@@ -625,7 +627,7 @@ namespace LWGUI.LwguiGradientEditor
             
             // Get curve key index
             _selectedCurves.Clear();
-            var lwguiMergedCurves = new LwguiGradient.LwguiMergedColorCurves(_lwguiGradient.rawCurves);
+            var lwguiMergedCurves = new LwguiGradient.LwguiMergedColorCurves(lwguiGradient.rawCurves);
             for (int c = 0; c < (int)LwguiGradient.Channel.Num; c++)
             {
                 if (selectedGradientKeyIndexes[c] < 0)
@@ -652,10 +654,10 @@ namespace LWGUI.LwguiGradientEditor
             var cws = new CurveWrapper[(int)LwguiGradient.Channel.Num];
             for (int c = 0; c < (int)LwguiGradient.Channel.Num; c++)
             {
-                var curve = _lwguiGradient.rawCurves[c];
+                var curve = lwguiGradient.rawCurves[c];
                 var cw = new CurveWrapper();
                 cw.id = c;
-                if (LwguiGradient.IsChannelIndexInMask(c, _viewChannelMask))
+                if (LwguiGradient.IsChannelIndexInMask(c, viewChannelMask))
                 {
                     cw.color = LwguiGradient.channelColors[c];
                     cw.renderer = new NormalCurveRenderer(curve);
@@ -752,16 +754,16 @@ namespace LWGUI.LwguiGradientEditor
             Clear();
             
             this._position = position;
-            this._lwguiGradient = gradient;
-            this._colorSpace = colorSpace;
-            this._viewChannelMask = viewChannelMask;
-            this._gradientTimeRange = timeRange;
+            this.lwguiGradient = gradient;
+            this.colorSpace = colorSpace;
+            this.viewChannelMask = viewChannelMask;
+            this.gradientTimeRange = timeRange;
             this._onChange = onChange;
         }
 
         public void OnGUI(Rect position)
         {
-            if (_lwguiGradient == null) 
+            if (lwguiGradient == null) 
                 return;
             
             // Debug.Log(JsonUtility.ToJson(lwguiGradient));
@@ -787,13 +789,19 @@ namespace LWGUI.LwguiGradientEditor
                     UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
                 
                 GUI.changed = true;
-                _onChange?.Invoke(_lwguiGradient);
+                _onChange?.Invoke(lwguiGradient);
+            }
+
+            if (_viewSettingschanged)
+            {
+                _viewSettingschanged = false;
+                GUI.changed = true;
             }
         }
 
         public void Clear()
         {
-            _lwguiGradient = null;
+            lwguiGradient = null;
             _gradientEditor = null;
             _curveEditor?.OnDisable();
             _curveEditor = null;

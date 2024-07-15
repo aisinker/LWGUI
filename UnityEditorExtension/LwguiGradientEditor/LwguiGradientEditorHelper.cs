@@ -113,6 +113,8 @@ namespace LWGUI.LwguiGradientEditor
             if (EditorGUI.EndChangeCheck())
             {
                 GUI.changed = true;
+                // TODO: Undo/Redo
+                // Undo.RecordObject(property.serializedObject.targetObject, "Editing Lwgui Gradient");
                 property.serializedObject.UpdateIfRequiredOrScript();
             }
             EditorGUI.EndProperty();

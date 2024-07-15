@@ -105,13 +105,17 @@ namespace LWGUI.LwguiGradientEditor
                 {
                     var saveLoadHelper = new ScriptableObjectSaveLoadHelper<LwguiGradientPresetLibrary>("lwguigradients", SaveType.Text);
                     _lwguiGradientLibraryEditor = new PresetLibraryLwguiGradientEditor(saveLoadHelper, _LwguiGradientLibraryEditorState, PresetClickedCallback);
+                    UpdatePresetLibraryViewSettings();
                 }
                 _lwguiGradientLibraryEditor.showHeader = true;
-                _lwguiGradientLibraryEditor.colorSpace = colorSpace;
-                _lwguiGradientLibraryEditor.viewChannelMask = viewChannelMask;
                 _lwguiGradientLibraryEditor.minMaxPreviewHeight = new Vector2(14f, 14f);
             }
+        }
 
+        void UpdatePresetLibraryViewSettings()
+        {
+            _lwguiGradientLibraryEditor.colorSpace = _lwguiGradientEditor.colorSpace;
+            _lwguiGradientLibraryEditor.viewChannelMask = _lwguiGradientEditor.viewChannelMask;
         }
 
         public static void SetCurrentGradient(LwguiGradient lwguiGradient)
@@ -184,8 +188,11 @@ namespace LWGUI.LwguiGradientEditor
             EditorGUI.BeginChangeCheck();
             _lwguiGradientEditor.OnGUI(_gradientEditorRect);
             if (EditorGUI.EndChangeCheck())
+            {
                 _changed = true;
-            
+                UpdatePresetLibraryViewSettings();
+            }
+
             _lwguiGradientLibraryEditor.OnGUI(_presetLibraryRect, lwguiGradient);
             
             if (_changed)
@@ -232,7 +239,7 @@ namespace LWGUI.LwguiGradientEditor
         private void OnDestroy()
         {
             UnregisterEvents();
-            _lwguiGradientLibraryEditor.UnloadUsedLibraries();
+            _lwguiGradientLibraryEditor?.UnloadUsedLibraries();
 
             Clear();
         }
@@ -265,6 +272,8 @@ namespace LWGUI.LwguiGradientEditor
         private void OnUndoPerformed(in UndoRedoInfo info)
         {
             Init();
+            // TODO: Undo/Redo
+            // Debug.Log(11111111111);
         }
 #endif
 
