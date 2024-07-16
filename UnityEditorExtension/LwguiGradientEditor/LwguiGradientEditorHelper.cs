@@ -43,7 +43,8 @@ namespace LWGUI.LwguiGradientEditor
         public static void GradientField(Rect position, GUIContent label, LwguiGradient gradient, 
             ColorSpace colorSpace = ColorSpace.Gamma, 
             LwguiGradient.ChannelMask viewChannelMask = LwguiGradient.ChannelMask.All, 
-            LwguiGradient.GradientTimeRange timeRange = LwguiGradient.GradientTimeRange.One)
+            LwguiGradient.GradientTimeRange timeRange = LwguiGradient.GradientTimeRange.One,
+            Action onOpenWindow = null)
         {
             int id = GUIUtility.GetControlID(s_LwguiGradientHash, FocusType.Keyboard, position);
             var rect = EditorGUI.PrefixLabel(position, id, label);
@@ -60,6 +61,7 @@ namespace LWGUI.LwguiGradientEditor
                             s_LwguiGradientID = id;
                             GUIUtility.keyboardControl = id;
                             LwguiGradientWindow.Show(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
+                            onOpenWindow?.Invoke();
                             GUIUtility.ExitGUI();
                         }
                         else if (evt.button == 1)
@@ -75,25 +77,28 @@ namespace LWGUI.LwguiGradientEditor
                     {
                         evt.Use();
                         LwguiGradientWindow.Show(gradient, colorSpace, viewChannelMask, timeRange, GUIView.current);
+                        onOpenWindow?.Invoke();
                         GUIUtility.ExitGUI();
                     }
 
                     break;
                 case EventType.Repaint:
                     DrawGradientWithBackground(rect, gradient, colorSpace, viewChannelMask);
-                    // var previewRect = new Rect(rect.x + 2.5f, rect.y + 2.5f, rect.width - 5.0f, rect.height - 5.0f);
-                    // EditorGUI.DrawPreviewTexture(previewRect, gradient.GetPreviewRampTexture(256, 1, colorSpace, viewChannelMask));
-                    // var outlineRect = new Rect(rect.x + 0.5f, rect.y + 0.5f, rect.width - 1.0f, rect.height - 1.0f);
-                    // EditorStyles.colorPickerBox.Draw(outlineRect, GUIContent.none, id);
                     break;
                 case EventType.ExecuteCommand:
                     // When drawing the modifying Gradient Field and it has changed
                     if ((GUIUtility.keyboardControl == id || s_LwguiGradientID == id)
                         && evt.commandName == LwguiGradientWindow.LwguiGradientChangedCommand)
                     {
-                        // evt.Use();
                         GUI.changed = true;
                         HandleUtility.Repaint();
+                    }
+                    break;
+                case EventType.ValidateCommand:
+                    // Sync Undo/Redo result to editor window
+                    if (s_LwguiGradientID == id && evt.commandName == "UndoRedoPerformed")
+                    {
+                        LwguiGradientWindow.UpdateCurrentGradient(gradient);
                     }
                     break;
             }
@@ -108,14 +113,13 @@ namespace LWGUI.LwguiGradientEditor
             label = EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginChangeCheck();
             
-            GradientField(position, label, gradient, colorSpace, viewChannelMask, timeRange);
+            GradientField(position, label, gradient, colorSpace, viewChannelMask, timeRange, 
+                () => LwguiGradientWindow.RegisterSerializedObjectUndo(property.serializedObject.targetObject));
 
             if (EditorGUI.EndChangeCheck())
             {
                 GUI.changed = true;
-                // TODO: Undo/Redo
-                // Undo.RecordObject(property.serializedObject.targetObject, "Editing Lwgui Gradient");
-                property.serializedObject.UpdateIfRequiredOrScript();
+                LwguiGradientWindow.RegisterSerializedObjectUndo(property.serializedObject.targetObject);
             }
             EditorGUI.EndProperty();
         }
@@ -138,6 +142,14 @@ namespace LWGUI.LwguiGradientEditor
                 HandleUtility.Repaint();
             }
 
+            // Sync Undo/Redo result to editor window
+            if (s_LwguiGradientID == id 
+                && evt.commandName == "UndoRedoPerformed")
+            {
+                LwguiGradientWindow.UpdateCurrentGradient(gradient);
+            }
+
+            // Open editor window
             var clicked = ReflectionHelper.GUI_Button(position, id, icon, GUI.skin.button);
             if (clicked)
             {

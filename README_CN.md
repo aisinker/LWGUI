@@ -68,7 +68,7 @@
    * [Contribution](#contribution)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: runner, at: Thu Jul 11 09:14:46 UTC 2024 -->
+<!-- Added by: runner, at: Fri May 24 11:12:51 UTC 2024 -->
 
 <!--te-->
 
@@ -78,6 +78,7 @@
 1. 确保你的Unity版本兼容LWGUI
    - LWGUI 1.x: **Unity 2017.4+**
    - LWGUI 2.x: **Unity 2021.3+**
+     - **推荐的最低版本: Unity 2022.2+, 更低版本虽然能使用但可能有BUG**
    
 2. 打开已有工程
 3. （可能需要全局代理）`Window > Package Manager > Add > Add package from git URL` 输入`https://github.com/JasonMa0012/LWGUI.git`

@@ -6,6 +6,7 @@ using LWGUI.LwguiGradientEditor;
 using LWGUI.Runtime.LwguiGradient;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace LWGUI
 {
@@ -33,13 +34,16 @@ namespace LWGUI
 			string rootPath,
 			int defaultWidth,
 			int defaultHeight,
+			out bool doRegisterUndo,
 			out Texture2D newTexture,
 			out bool doSave,
-			out bool doDiscard)
+			out bool doDiscard
+			)
 		{
 			newTexture = null;
 			var hasChange = false;
 			var shouldCreate = false;
+			var doOpenWindow = false;
 			var singleButtonWidth = buttonRect.width * 0.25f;
 			var editRect = new Rect(buttonRect.x + singleButtonWidth * 0, buttonRect.y, singleButtonWidth, buttonRect.height);
 			var saveRect = new Rect(buttonRect.x + singleButtonWidth * 1, buttonRect.y, singleButtonWidth, buttonRect.height);
@@ -47,28 +51,32 @@ namespace LWGUI
 			var discardRect = new Rect(buttonRect.x + singleButtonWidth * 3, buttonRect.y, singleButtonWidth, buttonRect.height);
 
 			// Edit button event
-			EditorGUI.BeginChangeCheck();
-			LwguiGradientEditorHelper.GradientEditButton(editRect, _iconEdit, gradient, colorSpace, viewChannelMask, timeRange, () =>
 			{
-				// if the current edited texture is null, create new one
-				if (prop.textureValue == null)
+				EditorGUI.BeginChangeCheck();
+				LwguiGradientEditorHelper.GradientEditButton(editRect, _iconEdit, gradient, colorSpace, viewChannelMask, timeRange, () =>
 				{
-					shouldCreate = true;
-					Event.current.Use();
-				}
-				else
+					// if the current edited texture is null, create new one
+					if (prop.textureValue == null)
+					{
+						shouldCreate = true;
+						Event.current.Use();
+						return false;
+					}
+					else
+					{
+						doOpenWindow = true;
+						return true;
+					}
+				});
+				if (EditorGUI.EndChangeCheck())
 				{
-					// Undo.RecordObject(prop.textureValue, "Edit Gradient");
+					hasChange = true;
+					gradient = LwguiGradientWindow.instance.lwguiGradient;
 				}
 
-				return prop.textureValue != null;
-			});
-			if (EditorGUI.EndChangeCheck())
-			{
-				hasChange = true;
-				gradient = LwguiGradientWindow.instance.lwguiGradient;
+				doRegisterUndo = doOpenWindow;
 			}
-
+			
 			// Create button
 			if (GUI.Button(addRect, _iconAdd) || shouldCreate)
 			{
@@ -102,11 +110,13 @@ namespace LWGUI
 			}
 
 			// Save button
-			var color = GUI.color;
-			if (isDirty) GUI.color = Color.yellow;
-			doSave = GUI.Button(saveRect, _iconSave);
-			GUI.color = color;
-
+			{
+				var color = GUI.color;
+				if (isDirty) GUI.color = Color.yellow;
+				doSave = GUI.Button(saveRect, _iconSave);
+				GUI.color = color;
+			}
+			
 			// Discard button
 			doDiscard = GUI.Button(discardRect, _iconDiscard);
 
@@ -115,12 +125,16 @@ namespace LWGUI
 
 		public static bool HasGradient(AssetImporter assetImporter) { return assetImporter.userData.Contains("#");}
 		
-		public static LwguiGradient GetGradientFromTexture(Texture texture, out bool isDirty, bool doDiscard = false)
+		public static LwguiGradient GetGradientFromTexture(Texture texture, out bool isDirty, bool doDiscard = false, bool doRegisterUndo = false)
 		{
 			isDirty = false;
 			if (texture == null) return null;
 
 			var assetImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture));
+			if (doRegisterUndo)
+			{
+				LwguiGradientWindow.RegisterRampMapUndo(texture, assetImporter);
+			}
 			if (assetImporter != null && HasGradient(assetImporter))
 			{
 				isDirty = DecodeGradientFromJSON(assetImporter.userData, out var savedGradient, out var editingGradient);
@@ -142,19 +156,19 @@ namespace LWGUI
 			if (texture == null || gradient == null) return;
 
 			var texture2D = (Texture2D)texture;
+			var path = AssetDatabase.GetAssetPath(texture);
+			var assetImporter = AssetImporter.GetAtPath(path);
 			VersionControlHelper.Checkout(texture2D);
-			Undo.RecordObject(texture2D, "LWGUI: Set Gradient To Texture");
+			
+			LwguiGradientWindow.RegisterRampMapUndo(texture2D, assetImporter);
 
 			// Save to texture
-			var path = AssetDatabase.GetAssetPath(texture);
 			var pixels = gradient.GetPixels(texture.width, texture.height);
 			texture2D.SetPixels(pixels);
 			texture2D.Apply();
 
 			// Save gradient JSON to userData
-			var assetImporter = AssetImporter.GetAtPath(path);
-			LwguiGradient savedGradient, editingGradient;
-			DecodeGradientFromJSON(assetImporter.userData, out savedGradient, out editingGradient);
+			DecodeGradientFromJSON(assetImporter.userData, out var savedGradient, out _);
 			assetImporter.userData = EncodeGradientToJSON(doSaveToDisk ? gradient : savedGradient, gradient);
 
 			// Save texture to disk

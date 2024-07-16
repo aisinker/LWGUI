@@ -69,7 +69,7 @@ Having been validated through numerous large-scale commercial projects, employin
    * [Contribution](#contribution)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: runner, at: Thu Jul 11 09:14:46 UTC 2024 -->
+<!-- Added by: runner, at: Fri May 24 11:12:50 UTC 2024 -->
 
 <!--te-->
 
@@ -81,6 +81,8 @@ Having been validated through numerous large-scale commercial projects, employin
    - LWGUI 1.x: **Unity 2017.4+**
 
    - LWGUI 2.x: **Unity 2021.3+**
+     - **Recommended minimum version: Unity 2022.2+, lower versions can be used but may have bugs**
+   
 2. Open your project
 3. `Window > Package Manager > Add > Add package from git URL` , enter: `https://github.com/JasonMa0012/LWGUI.git`
 

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using LWGUI.Runtime.LwguiGradient;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 
 namespace LWGUI.LwguiGradientEditor
 {
@@ -43,7 +44,6 @@ namespace LWGUI.LwguiGradientEditor
         
         private GUIView _viewToUpdate;
         private Action<LwguiGradient> _onChange;
-        private bool _changed { get; set; }
 
         #endregion
 
@@ -82,7 +82,7 @@ namespace LWGUI.LwguiGradientEditor
         
         public static bool visible => _lwguiGradientWindow != null;
 
-        private void Init(bool force = true, bool forceRecreate = false)
+        public void Init(bool force = true, bool forceRecreate = false)
         {
             if (_lwguiGradientEditor == null || force || forceRecreate)
             {
@@ -118,14 +118,23 @@ namespace LWGUI.LwguiGradientEditor
             _lwguiGradientLibraryEditor.viewChannelMask = _lwguiGradientEditor.viewChannelMask;
         }
 
-        public static void SetCurrentGradient(LwguiGradient lwguiGradient)
+        /// Used to modify the LwguiGradient value externally, such as: Undo/Redo/Select Preset
+        public static void UpdateCurrentGradient(LwguiGradient newGradient, bool doDeepCopy = false)
         {
             if (_lwguiGradientWindow == null)
                 return;
 
-            _lwguiGradientWindow.lwguiGradient = lwguiGradient;
+            if (doDeepCopy)
+            {
+                _lwguiGradientWindow.lwguiGradient.DeepCopyFrom(newGradient);
+            }
+            else
+            {
+                _lwguiGradientWindow.lwguiGradient = newGradient;
+            }
+            // Debug.Log("Update");
             _lwguiGradientWindow.Init();
-            GUI.changed = true;
+            _lwguiGradientWindow.Repaint();
         }
         
         private static LwguiGradientWindow GetWindow(bool focus = true) => (LwguiGradientWindow)GetWindow(typeof(LwguiGradientWindow), true, "LWGUI Gradient Editor", focus);
@@ -172,6 +181,15 @@ namespace LWGUI.LwguiGradientEditor
             _lwguiGradientWindow.Repaint();
         }
 
+        public static void RegisterSerializedObjectUndo(Object targetObject)
+        {
+            Undo.RegisterCompleteObjectUndo(targetObject, "Lwgui Gradient Editor");
+        }
+
+        public static void RegisterRampMapUndo(Object texture, Object assetImporter)
+        {
+            Undo.RecordObjects(new Object[]{ texture, assetImporter }, "Set Lwgui Gradient To Texture");
+        }
 
         private void OnGUI()
         {
@@ -187,17 +205,10 @@ namespace LWGUI.LwguiGradientEditor
             
             EditorGUI.BeginChangeCheck();
             _lwguiGradientEditor.OnGUI(_gradientEditorRect);
+            _lwguiGradientLibraryEditor.OnGUI(_presetLibraryRect, lwguiGradient);
             if (EditorGUI.EndChangeCheck())
             {
-                _changed = true;
                 UpdatePresetLibraryViewSettings();
-            }
-
-            _lwguiGradientLibraryEditor.OnGUI(_presetLibraryRect, lwguiGradient);
-            
-            if (_changed)
-            {
-                _changed = false;
                 SendEvent(true);
             }
         }
@@ -271,9 +282,9 @@ namespace LWGUI.LwguiGradientEditor
 #if UNITY_2022_2_OR_NEWER
         private void OnUndoPerformed(in UndoRedoInfo info)
         {
-            Init();
-            // TODO: Undo/Redo
-            // Debug.Log(11111111111);
+            // Debug.Log("Init");
+            _lwguiGradientWindow.Init();
+            _lwguiGradientWindow.Repaint();
         }
 #endif
 
@@ -288,9 +299,8 @@ namespace LWGUI.LwguiGradientEditor
             if (gradient == null)
                 Debug.LogError("Incorrect object passed " + presetObject);
 
-            SetCurrentGradient(gradient);
+            UpdateCurrentGradient(gradient, true);
             // UnityEditorInternal.GradientPreviewCache.ClearCache();
-            _changed = true;
         }
 
         #endregion

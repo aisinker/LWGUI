@@ -923,6 +923,7 @@ namespace LWGUI
 		protected ColorSpace _colorSpace;
 		protected LwguiGradient.ChannelMask _viewChannelMask;
 		protected LwguiGradient.GradientTimeRange _timeRange;
+		protected bool _doRegisterUndo;
 
 		private static readonly GUIContent _iconMixImage = EditorGUIUtility.IconContent("darkviewbackground");
 
@@ -988,7 +989,7 @@ namespace LWGUI
 			var labelWidth = EditorGUIUtility.labelWidth;
 			var indentLevel = EditorGUI.indentLevel;
 
-			var gradient = RampHelper.GetGradientFromTexture(prop.textureValue, out var isDirty) ?? new LwguiGradient();
+			var gradient = RampHelper.GetGradientFromTexture(prop.textureValue, out var isDirty, false, _doRegisterUndo) ?? new LwguiGradient();
 
 			OnRampPropUpdate(position, prop, label, editor);
 
@@ -1011,7 +1012,7 @@ namespace LWGUI
 
 			// Draw Ramp Editor
 			var hasGradientChanges = RampHelper.RampEditor(buttonRect, prop, ref gradient, _colorSpace, _viewChannelMask, _timeRange, 
-				isDirty, _defaultFileName, _rootPath, (int)_defaultWidth, (int)_defaultHeight,
+				isDirty, _defaultFileName, _rootPath, (int)_defaultWidth, (int)_defaultHeight, out _doRegisterUndo,
 				out var newCreatedTexture, out var doSaveGradient, out var doDiscardGradient);
 			
 			if (newCreatedTexture != null)

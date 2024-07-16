@@ -52,7 +52,6 @@ namespace LWGUI.LwguiGradientEditor
             LwguiGradientEditorHelper.GradientField(position, label, property, gradient, colorSpace, viewChannelMask, timeRange);
             if (EditorGUI.EndChangeCheck())
             {
-                // Debug.Log(11111111111);
             }
         }
     }

@@ -73,17 +73,7 @@ namespace LWGUI.Runtime.LwguiGradient
 
         public LwguiGradient(LwguiGradient src)
         {
-            _curves = new List<AnimationCurve>();
-            for (int c = 0; c < (int)Channel.Num; c++)
-                _curves.Add(new AnimationCurve());
-
-            for (int c = 0; c < src._curves.Count; c++)
-            {
-                foreach (var key in src._curves[c].keys)
-                {
-                    _curves[c].AddKey(key);
-                }
-            }
+            DeepCopyFrom(src);
         }
 
         public LwguiGradient(params Keyframe[] keys)
@@ -108,8 +98,23 @@ namespace LWGUI.Runtime.LwguiGradient
             {
                 if (!IsChannelIndexInMask(c, channelMask)) continue;
                 
-                if (_curves.Count > c) _curves[c].keys = new Keyframe[0];
+                if (_curves.Count > c) _curves[c].keys = Array.Empty<Keyframe>();
                 else _curves.Add(new AnimationCurve());
+            }
+        }
+        
+        public void DeepCopyFrom(LwguiGradient src)
+        {
+            _curves = new List<AnimationCurve>();
+            for (int c = 0; c < (int)Channel.Num; c++)
+                _curves.Add(new AnimationCurve());
+
+            for (int c = 0; c < src._curves.Count; c++)
+            {
+                foreach (var key in src._curves[c].keys)
+                {
+                    _curves[c].AddKey(key);
+                }
             }
         }
 
