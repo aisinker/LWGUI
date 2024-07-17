@@ -771,25 +771,6 @@ Custom Header和Footer可以让你无需修改LWGUI插件的代码即可在Shade
 
 TODO
 
-## TODO
-
-- [ ] 支持ShaderGraph or ASE
-- [x] **per material保存折叠组打开状态**
-- [x] 支持Unreal风格的Revertable GUI
-- [x] **支持HelpBox**
-- [ ] 支持改文字格式
-- [x] **支持Tooltip, 显示默认值和自定义内容**
-- [x] **支持右上角菜单全部展开或折叠**
-- [x] 支持Pass开关
-- [ ] 支持Curve
-- [x] **支持搜索框**
-- [x] **支持仅显示已修改项**
-- [x] 支持预设管理器
-- [x] 支持自适应枚举宽度
-- [x] 支持2017
-  - [x] 反射引擎私有函数
-  - [x] 复制属性菜单
-
 
 
 
