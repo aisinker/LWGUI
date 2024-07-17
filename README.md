@@ -14,9 +14,11 @@ Having been validated through numerous large-scale commercial projects, employin
 
 
 
-| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
+| ![image-20240716183800118](./README_CN.assets/image-20240716183800118.png) | ![image-20240716184045776](./README_CN.assets/image-20240716184045776.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| The search bar also enables filtering of modified properties | Right-click to paste property values according to their type |
+| NEW: 比UE更加强大的Gradient编辑器, 同时支持Shader和C#        | NEW: 直接在ShaderGUI中插入图片, 无需跳转浏览器即可支持复杂文档的显示 |
+| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
+| 搜索栏亦可筛选已修改的属性                                   | 右键以按类型粘贴属性值                                       |
 
 
 
@@ -78,9 +80,9 @@ Having been validated through numerous large-scale commercial projects, employin
 
 1. Make sure your environment is compatible with LWGUI
 
-   - LWGUI 1.x: **Unity 2017.4+**
+   - LWGUI <1.18: **Unity 2017.4+**
 
-   - LWGUI 2.x: **Unity 2021.3+**
+   - LWGUI >=1.18: **Unity 2021.3+**
      - **Recommended minimum version: Unity 2022.2+, lower versions can be used but may have bugs**
    
 2. Open your project
@@ -389,6 +391,8 @@ float selectedChannelValue = dot(tex2D(_Tex, uv), _textureChannelMask);
 
 #### Ramp
 
+##### ShaderLab
+
 ```c#
 /// Draw an unreal style Ramp Map Editor (Default Ramp Map Resolution: 512 * 2)
 /// NEW: The new LwguiGradient type has both the Gradient and Curve editors, and can be used in C# scripts and runtime, and is intended to replace UnityEngine.Gradient
@@ -410,25 +414,45 @@ public RampDrawer(string group, string defaultFileName, string rootPath, string 
 public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask, float timeRange)
 ```
 
-
 Example:
 
 ```c#
 [Ramp(_, RampMap, Assets.Art, 512)] _Ramp ("Ramp Map", 2D) = "white" { }
-
 ```
 
 Result:
 
 ![image-20230625185730363](./README_CN.assets/image-20230625185730363.png)
 
-Ramp Editor:
-
-![image-20220821234658509](README_CN.assets/image-20220821234658509.png)
-
 You **must manually Save the edit results**, if there are unsaved changes, the Save button will display yellow.
 
 **When you move or copy the Ramp Map, remember to move together with the .meta file, otherwise you will not be able to edit it again!**
+
+##### C#
+
+Example:
+
+```c#
+public class Test : MonoBehaviour
+{
+    public LwguiGradient lwguiGradientSrgb = new LwguiGradient();
+
+    [LwguiGradientUsage(ColorSpace.Linear, LwguiGradient.ChannelMask.RGB, LwguiGradient.GradientTimeRange.TwentyFourHundred)]
+    public LwguiGradient lwguiGradientLinear = new LwguiGradient();
+}
+```
+
+Result:
+
+![image-20240717104144821](./README_CN.assets/image-20240717104144821.png)![image-20240717104206365](./README_CN.assets/image-20240717104206365.png)
+
+Default display settings can be set using the LwguiGradientUsage() Attribute.
+
+**Known issues:**
+
+- Preview images below Unity 2022 have no difference between sRGB/Linear color spaces
+- Ctrl + Z results may be slightly different from expected when the editor frame rate is too low
+
 
 
 #### Preset

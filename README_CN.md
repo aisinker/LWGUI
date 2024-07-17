@@ -14,8 +14,10 @@
 
 
 
-| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
+| ![image-20240716183800118](./README_CN.assets/image-20240716183800118.png) | ![image-20240716184045776](./README_CN.assets/image-20240716184045776.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| NEW: 比UE更加强大的Gradient编辑器, 同时支持Shader和C#        | NEW: 直接在ShaderGUI中插入图片, 无需跳转浏览器即可支持复杂文档的显示 |
+| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
 | 搜索栏亦可筛选已修改的属性                                   | 右键以按类型粘贴属性值                                       |
 
 
@@ -76,8 +78,8 @@
 ## Installation
 
 1. 确保你的Unity版本兼容LWGUI
-   - LWGUI 1.x: **Unity 2017.4+**
-   - LWGUI 2.x: **Unity 2021.3+**
+   - LWGUI <1.18: **Unity 2017.4+**
+   - LWGUI >=1.18: **Unity 2021.3+**
      - **推荐的最低版本: Unity 2022.2+, 更低版本虽然能使用但可能有BUG**
    
 2. 打开已有工程
@@ -388,6 +390,8 @@ float selectedChannelValue = dot(tex2D(_Tex, uv), _textureChannelMask);
 
 #### Ramp
 
+##### ShaderLab
+
 ```c#
 /// Draw an unreal style Ramp Map Editor (Default Ramp Map Resolution: 512 * 2)
 /// NEW: The new LwguiGradient type has both the Gradient and Curve editors, and can be used in C# scripts and runtime, and is intended to replace UnityEngine.Gradient
@@ -413,20 +417,40 @@ Example:
 
 ```c#
 [Ramp(_, RampMap, Assets.Art, 512)] _Ramp ("Ramp Map", 2D) = "white" { }
-
 ```
 
 Result:
 
 ![image-20230625185730363](./README_CN.assets/image-20230625185730363.png)
 
-Ramp编辑器:
-
-![image-20220821234658509](README_CN.assets/image-20220821234658509.png)
-
 你**必须手动保存编辑结果**, 如果有未保存的修改, Save按钮将显示黄色.
 
 **在你移动或者复制RampMap的时候, 切记要连同.meta文件一起移动, 否则将无法再次编辑!**
+
+##### C#
+
+Example:
+
+```c#
+public class Test : MonoBehaviour
+{
+    public LwguiGradient lwguiGradientSrgb = new LwguiGradient();
+
+    [LwguiGradientUsage(ColorSpace.Linear, LwguiGradient.ChannelMask.RGB, LwguiGradient.GradientTimeRange.TwentyFourHundred)]
+    public LwguiGradient lwguiGradientLinear = new LwguiGradient();
+}
+```
+
+Result:
+
+![image-20240717104144821](./README_CN.assets/image-20240717104144821.png)![image-20240717104206365](./README_CN.assets/image-20240717104206365.png)
+
+可以使用LwguiGradientUsage() Attribute设置默认的显示设置.
+
+**已知问题:**
+
+- Unity 2022以下的预览图像在sRGB/Linear颜色空间之间没有区别
+- 在编辑器帧率较低时Ctrl + Z结果可能和预期稍有偏差
 
 
 
