@@ -70,10 +70,6 @@ Having been validated through numerous large-scale commercial projects, employin
       * [Custom Header and Footer](#custom-header-and-footer)
       * [Custom Drawer](#custom-drawer)
    * [Contribution](#contribution)
-
-<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: runner, at: Wed Jul 17 04:01:21 UTC 2024 -->
-
 <!--te-->
 
 
