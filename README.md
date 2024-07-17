@@ -14,11 +14,11 @@ Having been validated through numerous large-scale commercial projects, employin
 
 
 
-| ![image-20240716183800118](./README_CN.assets/image-20240716183800118.png) | ![image-20240716184045776](./README_CN.assets/image-20240716184045776.png) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| NEW: 比UE更加强大的Gradient编辑器, 同时支持Shader和C#        | NEW: 直接在ShaderGUI中插入图片, 无需跳转浏览器即可支持复杂文档的显示 |
-| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
-| 搜索栏亦可筛选已修改的属性                                   | 右键以按类型粘贴属性值                                       |
+| ![image-20240716183800118](./README_CN.assets/image-20240716183800118.png)        | ![image-20240716184045776](./README_CN.assets/image-20240716184045776.png) |
+|-----------------------------------------------------------------------------------| ------------------------------------------------------------ |
+| NEW: A more powerful Gradient editor than UE, with support for both Shader and C# | NEW: Insert images directly into the ShaderGUI to support the display of complex documents without having to jump to the browser |
+| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png)        | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
+| The search bar can also filter for properties that have been modified             | Right-click to paste the attribute value by type                                       |
 
 
 
