@@ -776,25 +776,6 @@ MaterialToggleUIDrawer(string keyword)
 TODO
 
 
-## TODO
-
-- [x] Per material save the Folding Group open state
-- [x] Support for Unreal Style Revertable GUI
-- [x] Support for HelpBox
-- [x] Support for Tooltip, displays default values and custom content
-- [x] Support for upper-right menu, can be all expanded or collapsed
-- [ ] Support for ShaderGraph or ASE
-- [ ] Support for change text format
-- [x] Support for Pass switch
-- [ ] Support for Curve
-- [x] Support for search properties
-- [x] Support for Preset Manager
-- [x] Support for adaptive enumeration widths
-- [x] Support for Unity 2017
-  - [x] Reflection engine private function
-  - [x] Copy Properties Menu
-
-
 
 ## Contribution
 
