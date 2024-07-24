@@ -177,57 +177,22 @@ namespace LWGUI
 		// Tips: Use properties to fix null reference errors
 
 		private static GUIStyle _guiStyles_IconButton;
-
-		public static GUIStyle guiStyles_IconButton
-		{
-			get
-			{
-				if (_guiStyles_IconButton == null)
-				{
-					_guiStyles_IconButton = new GUIStyle(EditorStyles.iconButton) { fixedHeight = 0, fixedWidth = 0 };
-				}
-				return _guiStyles_IconButton;
-			}
-		}
+		public static GUIStyle guiStyles_IconButton => _guiStyles_IconButton ?? new GUIStyle(EditorStyles.iconButton) { fixedHeight = 0, fixedWidth = 0 };
 
 		private static GUIStyle _guiStyle_Foldout;
-
-		public static GUIStyle guiStyle_Foldout
+		public static GUIStyle guiStyle_Foldout => _guiStyle_Foldout ?? new GUIStyle(EditorStyles.miniButton)
 		{
-			get
-			{
-				if (_guiStyle_Foldout == null)
-				{
-					_guiStyle_Foldout =
-						new GUIStyle(EditorStyles.miniButton)
-						{
-							contentOffset = new Vector2(22, 0),
-							fixedHeight = 27,
-							alignment = TextAnchor.MiddleLeft,
-							font = EditorStyles.boldLabel.font,
-							fontSize = EditorStyles.boldLabel.fontSize + 1,
-						};
-				}
-				return _guiStyle_Foldout;
-			}
-		}
+			contentOffset = new Vector2(22, 0),
+			fixedHeight = 27,
+			alignment = TextAnchor.MiddleLeft,
+			font = EditorStyles.boldLabel.font,
+			fontSize = EditorStyles.boldLabel.fontSize + 1
+		};
 
 		private static GUIStyle _guiStyle_Helpbox;
-
-		public static GUIStyle guiStyle_Helpbox
-		{
-			get
-			{
-				if (_guiStyle_Helpbox == null)
-				{
-					_guiStyle_Helpbox = new GUIStyle(EditorStyles.helpBox) { fontSize = 12 };
-				}
-				return _guiStyle_Helpbox;
-			}
-		}
+		public static GUIStyle guiStyle_Helpbox => _guiStyle_Helpbox ?? new GUIStyle(EditorStyles.helpBox) { fontSize = 12 };
 
 		private static GUIStyle _guiStyles_ToolbarSearchTextFieldPopup;
-
 		public static GUIStyle guiStyles_ToolbarSearchTextFieldPopup
 		{
 			get
@@ -359,7 +324,8 @@ namespace LWGUI
 			}
 		}
 
-		private static Texture _logo = AssetDatabase.LoadAssetAtPath<Texture>(AssetDatabase.GUIDToAssetPath("26b9d845eb7b1a747bf04dc84e5bcc2c"));
+		private static Texture _logoCache;
+		private static Texture _logo => _logoCache = _logoCache ?? AssetDatabase.LoadAssetAtPath<Texture>(AssetDatabase.GUIDToAssetPath("26b9d845eb7b1a747bf04dc84e5bcc2c"));
 		private static GUIContent _logoGuiContent = new GUIContent(string.Empty, _logo,
 																   "LWGUI (Light Weight Shader GUI)\n\n"
 																 + "A Lightweight, Flexible, Powerful Unity Shader GUI system.\n\n"
