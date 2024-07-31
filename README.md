@@ -14,9 +14,11 @@ Having been validated through numerous large-scale commercial projects, employin
 
 
 
-| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| The search bar also enables filtering of modified properties | Right-click to paste property values according to their type |
+| ![image-20240716183800118](./README_CN.assets/image-20240716183800118.png)        | ![image-20240716184045776](./README_CN.assets/image-20240716184045776.png) |
+|-----------------------------------------------------------------------------------| ------------------------------------------------------------ |
+| NEW: A more powerful Gradient editor than UE, with support for both Shader and C# | NEW: Insert images directly into the ShaderGUI to support the display of complex documents without having to jump to the browser |
+| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png)        | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
+| The search bar can also filter for properties that have been modified             | Right-click to paste the attribute value by type                                       |
 
 
 
@@ -26,49 +28,60 @@ Having been validated through numerous large-scale commercial projects, employin
 | [paypal.me/JasonMa0012](paypal.me/JasonMa0012)      | ![723ddce6-fb86-48ff-9683-a12cf6cff7a0](./README_CN.assets/723ddce6-fb86-48ff-9683-a12cf6cff7a0.jpg) |
 
 
-- [Installation](#installation)
-- [Usage](#usage)
-  * [Getting Started](#getting-started)
-  * [LWGUI Drawers](#lwgui-drawers)
-    + [Main & Sub](#main--sub)
-    + [SubToggle](#subtoggle)
-    + [SubPowerSlider](#subpowerslider)
-    + [SubIntRange](#subintrange)
-    + [MinMaxSlider](#minmaxslider)
-    + [KWEnum](#kwenum)
-    + [SubEnum & SubKeywordEnum](#subenum--subkeywordenum)
-    + [Tex & Color](#tex--color)
-    + [Channel](#channel)
-    + [Ramp](#ramp)
-    + [Preset](#preset)
-      - [Create Preset File](#create-preset-file)
-      - [Edit Preset](#edit-preset)
-  * [LWGUI Decorator](#lwgui-decorator)
-    + [Title & SubTitle](#title--subtitle)
-    + [Tooltip & Helpbox](#tooltip--helpbox)
-    + [PassSwitch](#passswitch)
-    + [Advanced & AdvancedHeaderProperty](#advanced--advancedheaderproperty)
-    + [Hidden](#hidden)
-    + [ShowIf](#showif)
-  * [Unity Builtin Drawers](#unity-builtin-drawers)
-    + [Space](#space)
-    + [Header](#header)
-    + [Enum](#enum)
-    + [IntRange](#intrange)
-    + [KeywordEnum](#keywordenum)
-    + [PowerSlider](#powerslider)
-    + [Toggle](#toggle)
-  * [Tips](#tips)
-- [Custom Shader GUI](#custom-shader-gui)
-  * [Custom Header and Footer](#custom-header-and-footer)
-  * [Custom Drawer](#custom-drawer)
-- [TODO](#todo)
-- [Contribution](#contribution)
+<!--ts-->
+* [LWGUI (Light Weight Shader GUI)](#lwgui-light-weight-shader-gui)
+   * [Installation](#installation)
+   * [Usage](#usage)
+      * [Getting Started](#getting-started)
+      * [LWGUI Drawers](#lwgui-drawers)
+         * [Main &amp; Sub](#main--sub)
+         * [SubToggle](#subtoggle)
+         * [SubPowerSlider](#subpowerslider)
+         * [SubIntRange](#subintrange)
+         * [MinMaxSlider](#minmaxslider)
+         * [KWEnum](#kwenum)
+         * [SubEnum &amp; SubKeywordEnum](#subenum--subkeywordenum)
+         * [Tex &amp; Color](#tex--color)
+         * [Image](#image)
+         * [Channel](#channel)
+         * [Ramp](#ramp)
+            * [ShaderLab](#shaderlab)
+            * [C#](#c)
+         * [Preset](#preset)
+            * [Create Preset File](#create-preset-file)
+            * [Edit Preset](#edit-preset)
+      * [LWGUI Decorator](#lwgui-decorator)
+         * [Title &amp; SubTitle](#title--subtitle)
+         * [Tooltip &amp; Helpbox](#tooltip--helpbox)
+         * [PassSwitch](#passswitch)
+         * [Advanced &amp; AdvancedHeaderProperty](#advanced--advancedheaderproperty)
+         * [Hidden](#hidden)
+         * [ReadOnly](#readonly)
+         * [ShowIf](#showif)
+      * [Unity Builtin Drawers](#unity-builtin-drawers)
+         * [Space](#space)
+         * [Header](#header)
+         * [Enum](#enum)
+         * [IntRange](#intrange)
+         * [KeywordEnum](#keywordenum)
+         * [PowerSlider](#powerslider)
+         * [Toggle](#toggle)
+   * [Custom Shader GUI](#custom-shader-gui)
+      * [Custom Header and Footer](#custom-header-and-footer)
+      * [Custom Drawer](#custom-drawer)
+   * [Contribution](#contribution)
+<!--te-->
 
 
 ## Installation
 
-1. Make sure your environment is compatible with LWGUI: **Unity 2017.4+**
+1. Make sure your environment is compatible with LWGUI
+
+   - LWGUI <1.17: **Unity 2017.4+**
+
+   - LWGUI >=1.17: **Unity 2021.3+**
+     - **Recommended minimum version: Unity 2022.2+, lower versions can be used but may have bugs**
+   
 2. Open your project
 3. `Window > Package Manager > Add > Add package from git URL` , enter: `https://github.com/JasonMa0012/LWGUI.git`
 
@@ -326,6 +339,21 @@ Result:
 
 ![image-20220828003507825](README_CN.assets/image-20220828003507825.png)
 
+#### Image
+
+```c#
+/// Draw a read only texture preview. Select the default texture to be displayed in the shader import settings.
+/// Note: Selected default textures will always be excluded from the build!!!
+/// group：father group name, support suffix keyword for conditional display (Default: none)
+/// Target Property Type: Texture
+public ImageDrawer() { }
+public ImageDrawer(string group)
+```
+
+Result:
+
+![image-20240416142736663](./README_CN.assets/image-20240416142736663.png)
+
 #### Channel
 
 ```c#
@@ -360,40 +388,68 @@ float selectedChannelValue = dot(tex2D(_Tex, uv), _textureChannelMask);
 
 #### Ramp
 
+##### ShaderLab
+
 ```c#
-/// Draw a Ramp Map Editor (Defaulf Ramp Map Resolution: 512 * 2)
-/// group：father group name, support suffix keyword for conditional display (Default: none)
+/// Draw an unreal style Ramp Map Editor (Default Ramp Map Resolution: 512 * 2)
+/// NEW: The new LwguiGradient type has both the Gradient and Curve editors, and can be used in C# scripts and runtime, and is intended to replace UnityEngine.Gradient
+/// group: father group name, support suffix keyword for conditional display (Default: none)
 /// defaultFileName: default Ramp Map file name when create a new one (Default: RampMap)
 /// rootPath: the path where ramp is stored, replace '/' with '.' (for example: Assets.Art.Ramps). when selecting ramp, it will also be filtered according to the path (Default: Assets)
+/// colorSpace: switch sRGB / Linear in ramp texture import setting (Default: sRGB)
 /// defaultWidth: default Ramp Width (Default: 512)
+/// viewChannelMask: editable channels. (Default: RGBA)
+/// timeRange: the abscissa display range (1/24/2400), is used to optimize the editing experience when the abscissa is time of day. (Default: 1)
 /// Target Property Type: Texture2D
 public RampDrawer() : this(String.Empty) { }
 public RampDrawer(string group) : this(group, "RampMap") { }
 public RampDrawer(string group, string defaultFileName) : this(group, defaultFileName, DefaultRootPath, 512) { }
 public RampDrawer(string group, string defaultFileName, float defaultWidth) : this(group, defaultFileName, DefaultRootPath, defaultWidth) { }
-public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth)
-
+public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth) : this(group, defaultFileName, rootPath, "sRGB", defaultWidth) { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, "RGBA") { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, viewChannelMask, 1) { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask, float timeRange)
 ```
-
 
 Example:
 
 ```c#
 [Ramp(_, RampMap, Assets.Art, 512)] _Ramp ("Ramp Map", 2D) = "white" { }
-
 ```
 
 Result:
 
 ![image-20230625185730363](./README_CN.assets/image-20230625185730363.png)
 
-Ramp Editor:
-
-![image-20220821234658509](README_CN.assets/image-20220821234658509.png)
-
 You **must manually Save the edit results**, if there are unsaved changes, the Save button will display yellow.
 
 **When you move or copy the Ramp Map, remember to move together with the .meta file, otherwise you will not be able to edit it again!**
+
+##### C#
+
+Example:
+
+```c#
+public class Test : MonoBehaviour
+{
+    public LwguiGradient lwguiGradientSrgb = new LwguiGradient();
+
+    [LwguiGradientUsage(ColorSpace.Linear, LwguiGradient.ChannelMask.RGB, LwguiGradient.GradientTimeRange.TwentyFourHundred)]
+    public LwguiGradient lwguiGradientLinear = new LwguiGradient();
+}
+```
+
+Result:
+
+![image-20240717104144821](./README_CN.assets/image-20240717104144821.png)![image-20240717104206365](./README_CN.assets/image-20240717104206365.png)
+
+Default display settings can be set using the LwguiGradientUsage() Attribute.
+
+**Known issues:**
+
+- Preview images below Unity 2022 have no difference between sRGB/Linear color spaces
+- Ctrl + Z results may be slightly different from expected when the editor frame rate is too low
+
 
 
 #### Preset
@@ -713,25 +769,6 @@ MaterialToggleUIDrawer(string keyword)
 ### Custom Drawer
 
 TODO
-
-
-## TODO
-
-- [x] Per material save the Folding Group open state
-- [x] Support for Unreal Style Revertable GUI
-- [x] Support for HelpBox
-- [x] Support for Tooltip, displays default values and custom content
-- [x] Support for upper-right menu, can be all expanded or collapsed
-- [ ] Support for ShaderGraph or ASE
-- [ ] Support for change text format
-- [x] Support for Pass switch
-- [ ] Support for Curve
-- [x] Support for search properties
-- [x] Support for Preset Manager
-- [x] Support for adaptive enumeration widths
-- [x] Support for Unity 2017
-  - [x] Reflection engine private function
-  - [x] Copy Properties Menu
 
 
 

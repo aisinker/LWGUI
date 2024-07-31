@@ -14,8 +14,10 @@
 
 
 
-| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
+| ![image-20240716183800118](./README_CN.assets/image-20240716183800118.png) | ![image-20240716184045776](./README_CN.assets/image-20240716184045776.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| NEW: 比UE更加强大的Gradient编辑器, 同时支持Shader和C#        | NEW: 直接在ShaderGUI中插入图片, 无需跳转浏览器即可支持复杂文档的显示 |
+| ![image-20220926025611208](./README_CN.assets/image-20220926025611208.png) | ![image-20230821205439889](./README_CN.assets/image-20230821205439889.png) |
 | 搜索栏亦可筛选已修改的属性                                   | 右键以按类型粘贴属性值                                       |
 
 
@@ -25,49 +27,58 @@
 | [paypal.me/JasonMa0012](paypal.me/JasonMa0012)      | ![723ddce6-fb86-48ff-9683-a12cf6cff7a0](./README_CN.assets/723ddce6-fb86-48ff-9683-a12cf6cff7a0.jpg) |
 
 
-- [Installation](#installation)
-- [Usage](#usage)
-  * [Getting Started](#getting-started)
-  * [LWGUI Drawers](#lwgui-drawers)
-    + [Main & Sub](#main--sub)
-    + [SubToggle](#subtoggle)
-    + [SubPowerSlider](#subpowerslider)
-    + [SubIntRange](#subintrange)
-    + [MinMaxSlider](#minmaxslider)
-    + [KWEnum](#kwenum)
-    + [SubEnum & SubKeywordEnum](#subenum--subkeywordenum)
-    + [Tex & Color](#tex--color)
-    + [Channel](#channel)
-    + [Ramp](#ramp)
-    + [Preset](#preset)
-      - [Create Preset File](#create-preset-file)
-      - [Edit Preset](#edit-preset)
-  * [LWGUI Decorator](#lwgui-decorator)
-    + [Title & SubTitle](#title--subtitle)
-    + [Tooltip & Helpbox](#tooltip--helpbox)
-    + [PassSwitch](#passswitch)
-    + [Advanced & AdvancedHeaderProperty](#advanced--advancedheaderproperty)
-    + [Hidden](#hidden)
-    + [ShowIf](#showif)
-  * [Unity Builtin Drawers](#unity-builtin-drawers)
-    + [Space](#space)
-    + [Header](#header)
-    + [Enum](#enum)
-    + [IntRange](#intrange)
-    + [KeywordEnum](#keywordenum)
-    + [PowerSlider](#powerslider)
-    + [Toggle](#toggle)
-  * [Tips](#tips)
-- [Custom Shader GUI](#custom-shader-gui)
-  * [Custom Header and Footer](#custom-header-and-footer)
-  * [Custom Drawer](#custom-drawer)
-- [TODO](#todo)
-- [Contribution](#contribution)
+<!--ts-->
+* [LWGUI (Light Weight Shader GUI)](#lwgui-light-weight-shader-gui)
+   * [Installation](#installation)
+   * [Usage](#usage)
+      * [Getting Started](#getting-started)
+      * [LWGUI Drawers](#lwgui-drawers)
+         * [Main &amp; Sub](#main--sub)
+         * [SubToggle](#subtoggle)
+         * [SubPowerSlider](#subpowerslider)
+         * [SubIntRange](#subintrange)
+         * [MinMaxSlider](#minmaxslider)
+         * [KWEnum](#kwenum)
+         * [SubEnum &amp; SubKeywordEnum](#subenum--subkeywordenum)
+         * [Tex &amp; Color](#tex--color)
+         * [Image](#image)
+         * [Channel](#channel)
+         * [Ramp](#ramp)
+            * [ShaderLab](#shaderlab)
+            * [C#](#c)
+         * [Preset](#preset)
+            * [Create Preset File](#create-preset-file)
+            * [Edit Preset](#edit-preset)
+      * [LWGUI Decorator](#lwgui-decorator)
+         * [Title &amp; SubTitle](#title--subtitle)
+         * [Tooltip &amp; Helpbox](#tooltip--helpbox)
+         * [PassSwitch](#passswitch)
+         * [Advanced &amp; AdvancedHeaderProperty](#advanced--advancedheaderproperty)
+         * [Hidden](#hidden)
+         * [ReadOnly](#readonly)
+         * [ShowIf](#showif)
+      * [Unity Builtin Drawers](#unity-builtin-drawers)
+         * [Space](#space)
+         * [Header](#header)
+         * [Enum](#enum)
+         * [IntRange](#intrange)
+         * [KeywordEnum](#keywordenum)
+         * [PowerSlider](#powerslider)
+         * [Toggle](#toggle)
+   * [Custom Shader GUI](#custom-shader-gui)
+      * [Custom Header and Footer](#custom-header-and-footer)
+      * [Custom Drawer](#custom-drawer)
+   * [Contribution](#contribution)
+<!--te-->
 
 
 ## Installation
 
-1. 确保你的Unity版本兼容LWGUI: **Unity 2017.4+**
+1. 确保你的Unity版本兼容LWGUI
+   - LWGUI <1.17: **Unity 2017.4+**
+   - LWGUI >=1.17: **Unity 2021.3+**
+     - **推荐的最低版本: Unity 2022.2+, 更低版本虽然能使用但可能有BUG**
+   
 2. 打开已有工程
 3. （可能需要全局代理）`Window > Package Manager > Add > Add package from git URL` 输入`https://github.com/JasonMa0012/LWGUI.git`
 
@@ -314,7 +325,7 @@ Example:
 [Tex(Group3, _textureChannelMask1)] _tex_channel ("Tex with Channel", 2D) = "white" { }
 [HideInInspector] _textureChannelMask1(" ", Vector) = (0,0,0,1)
 
-// Display up to 4 colors in a single line (Unity 2019.2+)
+// Display up to 4 colors in a single line
 [Color(Group3, _mColor1, _mColor2, _mColor3)]
 _mColor ("Multi Color", Color) = (1, 1, 1, 1)
 [HideInInspector] _mColor1 (" ", Color) = (1, 0, 0, 1)
@@ -326,6 +337,21 @@ _mColor ("Multi Color", Color) = (1, 1, 1, 1)
 Result:
 
 ![image-20220828003507825](README_CN.assets/image-20220828003507825.png)
+
+#### Image
+
+```c#
+/// Draw a read only texture preview. Select the default texture to be displayed in the shader import settings.
+/// Note: Selected default textures will always be excluded from the build!!!
+/// group：father group name, support suffix keyword for conditional display (Default: none)
+/// Target Property Type: Texture
+public ImageDrawer() { }
+public ImageDrawer(string group)
+```
+
+Result:
+
+![image-20240416142736663](./README_CN.assets/image-20240416142736663.png)
 
 #### Channel
 
@@ -361,39 +387,67 @@ float selectedChannelValue = dot(tex2D(_Tex, uv), _textureChannelMask);
 
 #### Ramp
 
+##### ShaderLab
+
 ```c#
-/// Draw a Ramp Map Editor (Defaulf Ramp Map Resolution: 512 * 2)
-/// group：father group name, support suffix keyword for conditional display (Default: none)
+/// Draw an unreal style Ramp Map Editor (Default Ramp Map Resolution: 512 * 2)
+/// NEW: The new LwguiGradient type has both the Gradient and Curve editors, and can be used in C# scripts and runtime, and is intended to replace UnityEngine.Gradient
+/// group: father group name, support suffix keyword for conditional display (Default: none)
 /// defaultFileName: default Ramp Map file name when create a new one (Default: RampMap)
 /// rootPath: the path where ramp is stored, replace '/' with '.' (for example: Assets.Art.Ramps). when selecting ramp, it will also be filtered according to the path (Default: Assets)
+/// colorSpace: switch sRGB / Linear in ramp texture import setting (Default: sRGB)
 /// defaultWidth: default Ramp Width (Default: 512)
+/// viewChannelMask: editable channels. (Default: RGBA)
+/// timeRange: the abscissa display range (1/24/2400), is used to optimize the editing experience when the abscissa is time of day. (Default: 1)
 /// Target Property Type: Texture2D
 public RampDrawer() : this(String.Empty) { }
 public RampDrawer(string group) : this(group, "RampMap") { }
 public RampDrawer(string group, string defaultFileName) : this(group, defaultFileName, DefaultRootPath, 512) { }
 public RampDrawer(string group, string defaultFileName, float defaultWidth) : this(group, defaultFileName, DefaultRootPath, defaultWidth) { }
-public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth)
-
+public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth) : this(group, defaultFileName, rootPath, "sRGB", defaultWidth) { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, "RGBA") { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, viewChannelMask, 1) { }
+public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask, float timeRange)
 ```
 
 Example:
 
 ```c#
 [Ramp(_, RampMap, Assets.Art, 512)] _Ramp ("Ramp Map", 2D) = "white" { }
-
 ```
 
 Result:
 
 ![image-20230625185730363](./README_CN.assets/image-20230625185730363.png)
 
-Ramp编辑器:
-
-![image-20220821234658509](README_CN.assets/image-20220821234658509.png)
-
 你**必须手动保存编辑结果**, 如果有未保存的修改, Save按钮将显示黄色.
 
 **在你移动或者复制RampMap的时候, 切记要连同.meta文件一起移动, 否则将无法再次编辑!**
+
+##### C#
+
+Example:
+
+```c#
+public class Test : MonoBehaviour
+{
+    public LwguiGradient lwguiGradientSrgb = new LwguiGradient();
+
+    [LwguiGradientUsage(ColorSpace.Linear, LwguiGradient.ChannelMask.RGB, LwguiGradient.GradientTimeRange.TwentyFourHundred)]
+    public LwguiGradient lwguiGradientLinear = new LwguiGradient();
+}
+```
+
+Result:
+
+![image-20240717104144821](./README_CN.assets/image-20240717104144821.png)![image-20240717104206365](./README_CN.assets/image-20240717104206365.png)
+
+可以使用LwguiGradientUsage() Attribute设置默认的显示设置.
+
+**已知问题:**
+
+- Unity 2022以下的预览图像在sRGB/Linear颜色空间之间没有区别
+- 在编辑器帧率较低时Ctrl + Z结果可能和预期稍有偏差
 
 
 
@@ -711,25 +765,6 @@ Custom Header和Footer可以让你无需修改LWGUI插件的代码即可在Shade
 ### Custom Drawer
 
 TODO
-
-## TODO
-
-- [ ] 支持ShaderGraph or ASE
-- [x] **per material保存折叠组打开状态**
-- [x] 支持Unreal风格的Revertable GUI
-- [x] **支持HelpBox**
-- [ ] 支持改文字格式
-- [x] **支持Tooltip, 显示默认值和自定义内容**
-- [x] **支持右上角菜单全部展开或折叠**
-- [x] 支持Pass开关
-- [ ] 支持Curve
-- [x] **支持搜索框**
-- [x] **支持仅显示已修改项**
-- [x] 支持预设管理器
-- [x] 支持自适应枚举宽度
-- [x] 支持2017
-  - [x] 反射引擎私有函数
-  - [x] 复制属性菜单
 
 
 
