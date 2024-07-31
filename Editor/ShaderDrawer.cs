@@ -170,7 +170,7 @@ namespace LWGUI
 			editor.DefaultShaderPropertyInternal(position, prop, label);
 		}
 	}
-	
+
 	/// <summary>
 	/// Similar to builtin Toggle()
 	/// </summary>
@@ -185,7 +185,7 @@ namespace LWGUI
 			this.flags = flags;
 			this.bit = (int) bit;
 		}
-		
+
 		protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Float; }
 
 		public override void BuildStaticMetaData(Shader inShader, MaterialProperty inProp, MaterialProperty[] inProps, PropertyStaticData inoutPropertyStaticData)
@@ -193,21 +193,22 @@ namespace LWGUI
 			base.BuildStaticMetaData(inShader, inProp, inProps, inoutPropertyStaticData);
 			inoutPropertyStaticData.AddExtraProperty(flags);
 		}
-		
+
 		public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
 		{
-			bool value = (prop.floatValue != 0.0f);
 			EditorGUI.BeginChangeCheck();
-			value = EditorGUI.Toggle(position, label, value);
-			if (EditorGUI.EndChangeCheck())
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+			var value = EditorGUI.Toggle(position, label, prop.floatValue != 0.0f);
+			if (Helper.EndChangeCheck(metaDatas, prop))
 			{
 				prop.floatValue = value ? 1.0f : 0.0f;
 			}
+            EditorGUI.showMixedValue = false;
 			//
 			foreach (var target in editor.targets)
 			{
 				var material = (Material) target;
-				MaterialProperty flagsProp = lwgui.perFrameData.GetProperty(flags);
+				MaterialProperty flagsProp = metaDatas.GetProperty(flags);
 				var flagsValue = flagsProp.intValue;
 				// var flagsValue = material.GetInteger(flags);
 				if (value)
@@ -222,8 +223,13 @@ namespace LWGUI
 				material.SetInteger(flags, flagsValue);
 			}
 		}
-	}
-	
+
+        public override void Apply(MaterialProperty prop)
+        {
+            base.Apply(prop);
+        }
+    }
+
 	/// <summary>
 	/// Similar to builtin Toggle()
 	/// group：father group name, support suffix keyword for conditional display (Default: none)
@@ -991,9 +997,9 @@ namespace LWGUI
 		public RampDrawer(string group, string defaultFileName, float defaultWidth) : this(group, defaultFileName, DefaultRootPath, defaultWidth) { }
 
 		public RampDrawer(string group, string defaultFileName, string rootPath, float defaultWidth) : this(group, defaultFileName, rootPath, "sRGB", defaultWidth) { }
-		
+
 		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, "RGBA") { }
-		
+
 		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask) : this(group, defaultFileName, rootPath, colorSpace, defaultWidth, viewChannelMask, 1) { }
 
 		public RampDrawer(string group, string defaultFileName, string rootPath, string colorSpace, float defaultWidth, string viewChannelMask, float timeRange)
@@ -1064,10 +1070,10 @@ namespace LWGUI
 			}
 
 			// Draw Ramp Editor
-			var hasGradientChanges = RampHelper.RampEditor(buttonRect, prop, ref gradient, _colorSpace, _viewChannelMask, _timeRange, 
+			var hasGradientChanges = RampHelper.RampEditor(buttonRect, prop, ref gradient, _colorSpace, _viewChannelMask, _timeRange,
 				isDirty, _defaultFileName, _rootPath, (int)_defaultWidth, (int)_defaultHeight, out _doRegisterUndo,
 				out var newCreatedTexture, out var doSaveGradient, out var doDiscardGradient);
-			
+
 			if (newCreatedTexture != null)
 			{
 				LwguiGradientWindow.CloseWindow();
