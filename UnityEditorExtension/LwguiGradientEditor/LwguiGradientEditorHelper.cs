@@ -12,6 +12,7 @@ namespace LWGUI.LwguiGradientEditor
         private static readonly int s_LwguiGradientHash = "s_LwguiGradientHash".GetHashCode();
         private static int s_LwguiGradientID;
 
+        // GradientEditor.DrawGradientWithBackground()
         public static void DrawGradientWithBackground(Rect position, LwguiGradient gradient, ColorSpace colorSpace, LwguiGradient.ChannelMask viewChannelMask)
         {
             Texture2D gradientTexture = gradient.GetPreviewRampTexture(256, 1, colorSpace, viewChannelMask);
@@ -23,8 +24,9 @@ namespace LWGUI.LwguiGradientEditor
             GUI.DrawTextureWithTexCoords(r2, backgroundTexture, texCoordsRect, false);
 
             // Outline for Gradinet Texture, used to be Frame over texture.
-            GUI.Box(position, GUIContent.none);
-
+            // LWGUI: GUI.Box() will cause subsequent attributes to be unable to be selected
+            // GUI.Box(position, GUIContent.none);
+            
             // Gradient texture
             Color oldColor = GUI.color;
             GUI.color = Color.white;            //Dont want the Playmode tint to be applied to gradient textures.
