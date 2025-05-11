@@ -548,35 +548,21 @@ namespace LWGUI
 
 		#region
 
-		public KWEnumDrawer(string n1, string k1)
-			: this("_", new string[1] { n1 }, new string[1] { k1 }) { }
+        public KWEnumDrawer(params string[] pairs): this("_", pairs) { }
 
-		public KWEnumDrawer(string n1, string k1, string n2, string k2)
-			: this("_", new string[2] { n1, n2 }, new string[2] { k1, k2 }) { }
+        public KWEnumDrawer(string group, params string[] pairs)
+        {
+            var pairsCount = pairs.Length/2;
+            var names = new List<string>(pairsCount);
+            var keys = new List<string>(pairsCount);
+            for (int i = 0; i < pairsCount; i++)
+            {
+                names.Add(pairs[i * 2]);
+                keys.Add(pairs[i * 2 + 1]);
+            }
 
-		public KWEnumDrawer(string n1, string k1, string n2, string k2, string n3, string k3)
-			: this("_", new string[3] { n1, n2, n3 }, new string[3] { k1, k2, k3 }) { }
-
-		public KWEnumDrawer(string n1, string k1, string n2, string k2, string n3, string k3, string n4, string k4)
-			: this("_", new string[4] { n1, n2, n3, n4 }, new string[4] { k1, k2, k3, k4 }) { }
-
-		public KWEnumDrawer(string n1, string k1, string n2, string k2, string n3, string k3, string n4, string k4, string n5, string k5)
-			: this("_", new string[5] { n1, n2, n3, n4, n5 }, new string[5] { k1, k2, k3, k4, k5 }) { }
-
-		public KWEnumDrawer(string group, string n1, string k1)
-			: this(group, new string[1] { n1 }, new string[1] { k1 }) { }
-
-		public KWEnumDrawer(string group, string n1, string k1, string n2, string k2)
-			: this(group, new string[2] { n1, n2 }, new string[2] { k1, k2 }) { }
-
-		public KWEnumDrawer(string group, string n1, string k1, string n2, string k2, string n3, string k3)
-			: this(group, new string[3] { n1, n2, n3 }, new string[3] { k1, k2, k3 }) { }
-
-		public KWEnumDrawer(string group, string n1, string k1, string n2, string k2, string n3, string k3, string n4, string k4)
-			: this(group, new string[4] { n1, n2, n3, n4 }, new string[4] { k1, k2, k3, k4 }) { }
-
-		public KWEnumDrawer(string group, string n1, string k1, string n2, string k2, string n3, string k3, string n4, string k4, string n5, string k5)
-			: this(group, new string[5] { n1, n2, n3, n4, n5 }, new string[5] { k1, k2, k3, k4, k5 }) { }
+            Init(group, names.ToArray(), keys.ToArray(), null);
+        }
 
 		#endregion
 
