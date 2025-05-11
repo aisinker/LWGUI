@@ -287,6 +287,65 @@ namespace LWGUI
 		}
 	}
 
+    /// <summary>
+    /// Similar to builtin Toggle()
+    /// </summary>
+    public class SubBitToggleDrawer : SubDrawer
+    {
+        private string flags;
+        private int bit;
+
+        public SubBitToggleDrawer(string group, string flags, float bit)
+        {
+            this.group = group;
+            this.flags = flags;
+            this.bit = (int) bit;
+        }
+
+        protected override bool IsMatchPropType(MaterialProperty property) { return property.type == MaterialProperty.PropType.Float; }
+
+        public override void BuildStaticMetaData(Shader inShader, MaterialProperty inProp, MaterialProperty[] inProps, PropertyStaticData inoutPropertyStaticData)
+        {
+            base.BuildStaticMetaData(inShader, inProp, inProps, inoutPropertyStaticData);
+            inoutPropertyStaticData.AddExtraProperty(flags);
+        }
+
+        public override void DrawProp(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
+        {
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+            var value = EditorGUI.Toggle(position, label, prop.floatValue != 0.0f);
+            if (Helper.EndChangeCheck(metaDatas, prop))
+            {
+                prop.floatValue = value ? 1.0f : 0.0f;
+            }
+            EditorGUI.showMixedValue = false;
+            //
+            foreach (var target in editor.targets)
+            {
+                var material = (Material) target;
+                MaterialProperty flagsProp = metaDatas.GetProperty(flags);
+                var flagsValue = flagsProp.intValue;
+                // var flagsValue = material.GetInteger(flags);
+                if (value)
+                {
+                    flagsValue |= (1 << bit);
+                }
+                else
+                {
+                    flagsValue &= ~(1 << bit);
+                }
+                flagsProp.intValue = flagsValue;
+                material.SetInteger(flags, flagsValue);
+            }
+        }
+
+        public override void Apply(MaterialProperty prop)
+        {
+            base.Apply(prop);
+        }
+    }
+
 	/// <summary>
 	/// Similar to builtin PowerSlider()
 	/// 
